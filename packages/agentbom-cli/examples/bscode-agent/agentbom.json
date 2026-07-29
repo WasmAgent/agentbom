@@ -1,0 +1,142 @@
+{
+  "agentbom_version": "0.1",
+  "identity": {
+    "agent_id": "bscode-agent-demo-001",
+    "agent_name": "bscode agent",
+    "agent_version": "0.1.0",
+    "deployment_context": "development",
+    "generated_at": "2026-06-29T00:00:00Z"
+  },
+  "model_layer": {
+    "provider": "anthropic",
+    "model_id": "claude-sonnet-4-6",
+    "model_version": "2025-06",
+    "capabilities": ["tool_use", "code_generation", "code_review", "file_editing"]
+  },
+  "tool_layer": [
+    {
+      "tool_id": "file-read",
+      "tool_name": "Read",
+      "source": "builtin",
+      "permissions": ["fs:read"],
+      "risk_signals": []
+    },
+    {
+      "tool_id": "file-write",
+      "tool_name": "Write",
+      "source": "builtin",
+      "permissions": ["fs:write"],
+      "risk_signals": []
+    },
+    {
+      "tool_id": "file-edit",
+      "tool_name": "Edit",
+      "source": "builtin",
+      "permissions": ["fs:read", "fs:write"],
+      "risk_signals": []
+    },
+    {
+      "tool_id": "bash-exec",
+      "tool_name": "Bash",
+      "source": "builtin",
+      "permissions": ["process:exec", "fs:read", "fs:write"],
+      "risk_signals": ["command_execution"]
+    },
+    {
+      "tool_id": "content-grep",
+      "tool_name": "Grep",
+      "source": "builtin",
+      "permissions": ["fs:read"],
+      "risk_signals": []
+    },
+    {
+      "tool_id": "file-glob",
+      "tool_name": "Glob",
+      "source": "builtin",
+      "permissions": ["fs:read"],
+      "risk_signals": []
+    },
+    {
+      "tool_id": "cloudflare-docs-mcp",
+      "tool_name": "search_cloudflare_documentation",
+      "source": "mcp",
+      "mcp_server_id": "cloudflare-docs",
+      "permissions": ["network:outbound"],
+      "risk_signals": ["ssrf"]
+    },
+    {
+      "tool_id": "github-mcp",
+      "tool_name": "create_or_update_pull_request",
+      "source": "mcp",
+      "mcp_server_id": "github",
+      "permissions": ["network:outbound", "api:github"],
+      "risk_signals": ["exfiltration", "privilege_escalation"]
+    },
+    {
+      "tool_id": "lsp-diagnostics",
+      "tool_name": "get_diagnostics",
+      "source": "plugin",
+      "permissions": ["fs:read"],
+      "risk_signals": []
+    }
+  ],
+  "prompt_layer": {
+    "system_prompt_hash": "sha256:a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2",
+    "template_ids": ["bscode-system-v1", "bscode-implementer-v1"]
+  },
+  "permission_layer": {
+    "granted_scopes": [
+      "fs:read",
+      "fs:write",
+      "process:exec",
+      "network:outbound",
+      "api:github"
+    ],
+    "data_access": ["local_workspace", "github_api"],
+    "credential_references": ["github_token"]
+  },
+  "evidence_layer": {
+    "aep_references": ["aep-tool-invocation-001"],
+    "evidence_hashes": [
+      {
+        "type": "system_prompt",
+        "hash": "sha256:a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2",
+        "timestamp": "2026-06-29T00:00:00Z"
+      }
+    ]
+  },
+  "risk_layer": [
+    {
+      "risk_id": "risk-bash-001",
+      "severity": "medium",
+      "category": "command_execution",
+      "description": "Bash tool allows arbitrary process execution within workspace sandbox",
+      "status": "accepted"
+    },
+    {
+      "risk_id": "risk-github-mcp-001",
+      "severity": "high",
+      "category": "privilege_escalation",
+      "description": "GitHub MCP create_or_update_pull_request can modify repository state and merge code",
+      "status": "open"
+    },
+    {
+      "risk_id": "risk-github-mcp-002",
+      "severity": "medium",
+      "category": "exfiltration",
+      "description": "GitHub MCP tools can read repository data and potentially exfiltrate via PR descriptions or comments",
+      "status": "mitigated"
+    },
+    {
+      "risk_id": "risk-cf-docs-001",
+      "severity": "low",
+      "category": "ssrf",
+      "description": "Cloudflare Docs MCP makes outbound HTTP requests to docs.cloudflare.com",
+      "status": "accepted"
+    }
+  ],
+  "attestation": {
+    "generator": "agent-trust-infra/examples/bscode-agent",
+    "generator_version": "0.0.0-research"
+  }
+}

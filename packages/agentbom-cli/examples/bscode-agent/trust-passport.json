@@ -1,0 +1,68 @@
+{
+  "passport_version": "0.1",
+  "identity": {
+    "passport_id": "passport-bscode-demo-001",
+    "agent_id": "bscode-agent-demo-001",
+    "agent_name": "bscode agent",
+    "issuer": "agent-trust-infra/examples/bscode-agent",
+    "issuance_context": "self-issued"
+  },
+  "agentbom_ref": {
+    "agentbom_id": "bscode-agent-demo-001",
+    "agentbom_hash": "sha256:a3f1b2c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2",
+    "captured_at": "2026-06-29T00:00:00Z"
+  },
+  "audit_ref": {
+    "report_id": "placeholder",
+    "report_hash": "sha256:b4e5d6c7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5",
+    "generated_at": "2026-06-29T00:00:00Z"
+  },
+  "posture_ref": {
+    "snapshot_id": "posture-bscode-demo-001",
+    "snapshot_hash": "sha256:c5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7",
+    "captured_at": "2026-06-29T00:00:00Z"
+  },
+  "evidence_summary": {
+    "evidence_quality": "low",
+    "framework_mappings": [
+      {
+        "framework": "OWASP-MCP-Top10",
+        "coverage": "partial",
+        "note": "Demo fixture only. Not a real audit."
+      },
+      {
+        "framework": "NIST-AI-RMF",
+        "coverage": "none",
+        "note": "Demo fixture only. AI risk management not yet assessed."
+      }
+    ]
+  },
+  "risk_summary": {
+    "critical": 0,
+    "high": 0,
+    "medium": 1,
+    "low": 1,
+    "open_findings": 1
+  },
+  "validity": {
+    "issued_at": "2026-06-29T00:00:00Z",
+    "expires_at": "2026-09-27T00:00:00Z",
+    "renewal_triggers": [
+      "agentbom_changes",
+      "new_high_risk_finding",
+      "mcp_posture_drift",
+      "audit_report_updated"
+    ]
+  },
+  "revocation": {
+    "revoked": false,
+    "revocation_triggers": [
+      "critical_security_finding",
+      "evidence_falsified",
+      "agent_decommissioned"
+    ]
+  },
+  "attestation": {
+    "issuer": "agent-trust-infra/examples/bscode-agent"
+  }
+}

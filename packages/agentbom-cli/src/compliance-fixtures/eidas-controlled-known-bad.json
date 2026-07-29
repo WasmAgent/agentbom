@@ -1,0 +1,94 @@
+{
+  "agentbom_version": "0.1",
+  "identity": {
+    "agent_id": "eidas-agent-bad-001",
+    "agent_name": "EIDAS Non-Compliant Agent",
+    "agent_version": "3.0.0",
+    "deployment_context": "development",
+    "generated_at": "2026-07-07T00:00:00Z"
+  },
+  "model_layer": {
+    "provider": "anthropic",
+    "model_id": "claude-haiku-4-5",
+    "model_version": "2025-06",
+    "capabilities": ["tool_use"]
+  },
+  "tool_layer": [
+    {
+      "tool_id": "file-write",
+      "tool_name": "FileWrite",
+      "source": "builtin",
+      "permissions": ["filesystem:write"],
+      "risk_signals": ["medium:file_write"]
+    },
+    {
+      "tool_id": "external-network",
+      "tool_name": "ExternalNetwork",
+      "source": "mcp",
+      "mcp_server_id": "external-server",
+      "permissions": ["network:external"],
+      "risk_signals": ["high:external_network"]
+    },
+    {
+      "tool_id": "system-execute",
+      "tool_name": "SystemExecute",
+      "source": "builtin",
+      "permissions": ["system:execute"],
+      "risk_signals": ["critical:system_execute"]
+    },
+    {
+      "tool_id": "unverified-tool",
+      "tool_name": "UnverifiedTool",
+      "source": "plugin",
+      "permissions": ["api:call"],
+      "risk_signals": ["medium:unverified_source"]
+    }
+  ],
+  "prompt_layer": {
+    "system_prompt_hash": "sha256:f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7",
+    "template_ids": ["eidas-system-v1"]
+  },
+  "permission_layer": {
+    "granted_scopes": ["fs:read", "fs:write", "network:external", "system:execute"],
+    "data_access": ["local_workspace"],
+    "credential_references": []
+  },
+  "evidence_layer": {
+    "aep_references": ["aep-tool-invocation-001"],
+    "evidence_hashes": []
+  },
+  "risk_layer": [
+    {
+      "risk_id": "risk-critical-001",
+      "severity": "critical",
+      "category": "system_execute",
+      "description": "Critical risk: system execution capability",
+      "status": "open"
+    },
+    {
+      "risk_id": "risk-high-001",
+      "severity": "high",
+      "category": "external_network",
+      "description": "High risk: external network access",
+      "status": "open"
+    },
+    {
+      "risk_id": "risk-medium-001",
+      "severity": "medium",
+      "category": "file_write",
+      "description": "Medium risk: file write capability",
+      "status": "open"
+    },
+    {
+      "risk_id": "risk-medium-002",
+      "severity": "medium",
+      "category": "unverified_source",
+      "description": "Medium risk: unverified tool source",
+      "status": "open"
+    }
+  ],
+  "attestation": {
+    "generator": "agent-trust-infra",
+    "generator_version": "0.0.0-research"
+  }
+}

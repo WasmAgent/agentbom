@@ -1,0 +1,90 @@
+{
+  "agentbom_version": "0.1",
+  "identity": {
+    "agent_id": "iso-agent-001",
+    "agent_name": "ISO27001 Compliant Agent",
+    "agent_version": "2.0.0",
+    "deployment_context": "production",
+    "generated_at": "2026-07-07T00:00:00Z"
+  },
+  "model_layer": {
+    "provider": "anthropic",
+    "model_id": "claude-opus-4-8",
+    "model_version": "2025-06",
+    "capabilities": ["tool_use", "code_generation"]
+  },
+  "tool_layer": [
+    {
+      "tool_id": "file-read",
+      "tool_name": "Read",
+      "source": "builtin",
+      "permissions": ["fs:read"],
+      "risk_signals": []
+    },
+    {
+      "tool_id": "file-write-restricted",
+      "tool_name": "WriteRestricted",
+      "source": "builtin",
+      "permissions": ["fs:write:restricted"],
+      "risk_signals": []
+    },
+    {
+      "tool_id": "network-authenticated",
+      "tool_name": "AuthenticatedHttpClient",
+      "source": "builtin",
+      "permissions": ["network:outbound:authenticated"],
+      "risk_signals": ["high:data_exfiltration"]
+    },
+    {
+      "tool_id": "verified-mcp",
+      "tool_name": "VerifiedMCP",
+      "source": "mcp",
+      "mcp_server_id": "verified-server",
+      "permissions": ["network:outbound"],
+      "risk_signals": ["medium:api_access"]
+    }
+  ],
+  "prompt_layer": {
+    "system_prompt_hash": "sha256:b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3",
+    "template_ids": ["iso-system-v1"]
+  },
+  "permission_layer": {
+    "granted_scopes": ["fs:read", "fs:write:restricted", "network:outbound:authenticated"],
+    "data_access": ["local_workspace"],
+    "credential_references": []
+  },
+  "evidence_layer": {
+    "aep_references": ["aep-tool-invocation-001"],
+    "evidence_hashes": []
+  },
+  "risk_layer": [
+    {
+      "risk_id": "risk-data-exfil-001",
+      "severity": "high",
+      "category": "data_exfiltration",
+      "description": "Authenticated HTTP client could potentially exfiltrate data",
+      "status": "mitigated"
+    },
+    {
+      "risk_id": "risk-api-access-001",
+      "severity": "medium",
+      "category": "api_access",
+      "description": "Verified MCP server has API access capabilities",
+      "status": "open"
+    },
+    {
+      "risk_id": "risk-fs-write-001",
+      "severity": "low",
+      "category": "file_system",
+      "description": "Restricted write operations to specific paths",
+      "status": "accepted"
+    }
+  ],
+  "attestation": {
+    "generator": "agent-trust-infra",
+    "generator_version": "0.0.0-research",
+    "agentbom_hash": "sha256:hashabcdef1234567890",
+    "signature": "MEUCIQC3vZQnZJhKZ8hPYmFZNtjX6QTQ7RZnZXHQXG3QSY2FIwIgYKxLjKYqQYHBxO5H7nXZ9hYmFZNtjX6QTQ7RZnZXHQXG3Q=",
+    "timestamp": "2026-07-07T00:00:00Z"
+  }
+}
