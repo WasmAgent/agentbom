@@ -1,5 +1,12 @@
 # @wasmagent/agentbom-langchain
 
+## 0.3.4
+
+### Patch Changes
+
+- Updated dependencies [006daaf]
+  - @wasmagent/agentbom-core@0.3.4
+
 ## 0.3.3
 
 ### Patch Changes
