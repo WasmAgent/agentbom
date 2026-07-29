@@ -1,8 +1,8 @@
-# @wasmagent/agentbom-core
+# @wasmagent/agentbom-cli
 
-## 0.3.3
+## 0.2.0
 
-### Patch Changes
+### Minor Changes
 
 - 36f70f2: feat: migrate agentbom CLI from agent-trust-infra; add pipeline subpath export
 
@@ -32,35 +32,7 @@
 
   - Add `./pipeline` subpath export so CLI can import `PipelineConfig` and `runPipeline` directly
 
-## 0.3.2
-
 ### Patch Changes
 
-- 8cd15a5: chore: fix release workflow npm authentication
-
-## 0.3.1
-
-### Patch Changes
-
-- a067bb7: chore: retrigger npm publish with updated token
-
-## 0.3.0
-
-### Minor Changes
-
-- b8d3aa8: feat: initial npm publication of @wasmagent/agentbom packages
-
-  Publishes AgentBOM validator, compliance checker, version migrator,
-  diff utilities, and framework adapters migrated from agent-trust-infra.
-
-## 0.2.0
-
-### Minor Changes
-
-- 4bd2adf: feat: migrate AgentBOM implementation from agent-trust-infra
-
-  Migrates the full AgentBOM validator, compliance checker, version migrator,
-  diff utilities, and framework adapters (AutoGen, LangChain, LlamaIndex) from
-  WasmAgent/agent-trust-infra into this dedicated repository.
-
-  Schema loading uses @wasmagent/protocol as the canonical SSOT.
+- Updated dependencies [36f70f2]
+  - @wasmagent/agentbom-core@0.3.3
