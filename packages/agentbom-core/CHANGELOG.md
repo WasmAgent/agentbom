@@ -1,5 +1,11 @@
 # @wasmagent/agentbom-core
 
+## 0.3.1
+
+### Patch Changes
+
+- a067bb7: chore: retrigger npm publish with updated token
+
 ## 0.3.0
 
 ### Minor Changes
