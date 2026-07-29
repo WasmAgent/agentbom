@@ -1,0 +1,41 @@
+{
+  "profile_version": "0.1",
+  "profile_id": "iso27001-2022",
+  "framework": {
+    "name": "ISO27001",
+    "version": "2022",
+    "description": "ISO/IEC 27001:2022 compliance profile for information security management in AI agent systems"
+  },
+  "rules": {
+    "identity": {
+      "required_fields": ["agent_version", "deployment_context"],
+      "allowed_contexts": ["production"],
+      "requires_version": true
+    },
+    "tool_layer": {
+      "max_severity": "high",
+      "requires_tool_inventory": true,
+      "blocked_permissions": [
+        "filesystem:write unrestricted",
+        "network:external unauthenticated"
+      ],
+      "blocked_sources": ["unverified-external"]
+    },
+    "risk_layer": {
+      "requires_risk_assessment": true,
+      "max_unmitigated_critical": 0,
+      "max_unmitigated_high": 5,
+      "requires_mitigation_for": ["critical"]
+    },
+    "attestation": {
+      "requires_signature": true,
+      "requires_timestamp": true
+    }
+  },
+  "metadata": {
+    "author": "WasmAgent",
+    "created_at": "2026-07-07T00:00:00Z",
+    "updated_at": "2026-07-07T00:00:00Z",
+    "documentation_url": "https://www.iso.org/standard/85675.html"
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "name": "@wasmagent/agentbom-cli",
+  "version": "0.1.0",
+  "description": "AgentBOM developer CLI \u2014 BOM generation, compliance checking, regulatory reporting, trust chain verification, drift monitoring, and marketplace export",
+  "type": "module",
+  "main": "./dist/index.js",
+  "bin": {
+    "agentbom": "./dist/index.js",
+    "agent-trust": "./dist/index.js"
+  },
+  "files": [
+    "dist/",
+    "scripts/",
+    "profiles/",
+    "README.md"
+  ],
+  "keywords": [
+    "agentbom",
+    "mcp-posture",
+    "ai-trust",
+    "trust-passport",
+    "compliance",
+    "cli",
+    "mcp",
+    "ai-agent",
+    "security",
+    "eu-ai-act",
+    "soc2",
+    "iso27001"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WasmAgent/agentbom.git",
+    "directory": "packages/agentbom-cli"
+  },
+  "homepage": "https://github.com/WasmAgent/agentbom",
+  "bugs": {
+    "url": "https://github.com/WasmAgent/agentbom/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "dependencies": {
+    "@openagentaudit/passport": "^0.5.2",
+    "@wasmagent/agentbom-core": "workspace:*",
+    "@wasmagent/aep": "^1.21.1",
+    "prom-client": "^15.1.0",
+    "@wasmagent/mcp-posture": "^0.2.0"
+  },
+  "scripts": {
+    "build": "mkdir -p dist && bun build ./src/index.ts --target node --outfile dist/index.js",
+    "test": "bun test src/",
+    "typecheck": "tsc --noEmit"
+  }
+}

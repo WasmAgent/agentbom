@@ -1,0 +1,43 @@
+{
+  "profile_version": "0.1",
+  "profile_id": "eidas-controlled",
+  "framework": {
+    "name": "EIDAS",
+    "version": "controlled",
+    "description": "eIDAS compliant profile for controlled digital identity services in AI agent systems"
+  },
+  "rules": {
+    "identity": {
+      "required_fields": ["agent_version", "deployment_context"],
+      "allowed_contexts": ["production"],
+      "requires_version": true
+    },
+    "tool_layer": {
+      "max_severity": "low",
+      "requires_tool_inventory": true,
+      "blocked_permissions": [
+        "filesystem:write",
+        "network:external",
+        "system:execute"
+      ],
+      "blocked_sources": ["external", "unverified"]
+    },
+    "risk_layer": {
+      "requires_risk_assessment": true,
+      "max_unmitigated_critical": 0,
+      "max_unmitigated_high": 0,
+      "max_unmitigated_medium": 1,
+      "requires_mitigation_for": ["critical", "high", "medium"]
+    },
+    "attestation": {
+      "requires_signature": true,
+      "requires_timestamp": true
+    }
+  },
+  "metadata": {
+    "author": "WasmAgent",
+    "created_at": "2026-07-07T00:00:00Z",
+    "updated_at": "2026-07-07T00:00:00Z",
+    "documentation_url": "https://digital-strategy.ec.europa.eu/en/policies/european-identity-trust"
+  }
+}

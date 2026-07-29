@@ -1,0 +1,138 @@
+{
+  "profile_version": "0.1",
+  "profile_id": "eu-ai-act-annex-iv",
+  "framework": {
+    "name": "EU AI Act",
+    "version": "Annex IV (Regulation 2024/1689)",
+    "description": "EU AI Act Article 11 + Annex IV technical documentation requirements for high-risk AI systems. Compliance deadline: 2026-08-02 for GPAI systems; ongoing for Annex III systems."
+  },
+  "rules": {
+    "identity": {
+      "required_fields": [
+        "agent_id",
+        "agent_name",
+        "agent_version",
+        "deployment_context"
+      ],
+      "allowed_contexts": [
+        "staging",
+        "production",
+        "research",
+        "enterprise"
+      ],
+      "requires_version": true,
+      "annex_iv_ref": "§1 — General description: intended purpose, version, deployment context"
+    },
+    "model_layer": {
+      "requires_model_declaration": true,
+      "required_fields": [
+        "model_id",
+        "provider"
+      ],
+      "annex_iv_ref": "§2 — Development process: model provenance and training procedures"
+    },
+    "tool_layer": {
+      "requires_tool_inventory": true,
+      "max_severity": "high",
+      "blocked_permissions": [
+        "filesystem:write unrestricted",
+        "network:external unrestricted",
+        "system:execute arbitrary"
+      ],
+      "blocked_sources": [
+        "unverified-external",
+        "unknown"
+      ],
+      "annex_iv_ref": "§1 — Combinations with other products; §3 — Cybersecurity measures"
+    },
+    "prompt_layer": {
+      "requires_prompt_hash": true,
+      "requires_prompt_version": true,
+      "annex_iv_ref": "§2 — Design specifications (system prompt is the primary design artifact)"
+    },
+    "workflow_layer": {
+      "requires_workflow_definitions": false,
+      "annex_iv_ref": "§2 — Overall logic and key choices; §5 — Human oversight measures"
+    },
+    "policy_definitions": {
+      "requires_oversight_policy": true,
+      "annex_iv_ref": "§5 — Human oversight measures: override mechanisms and circuit breakers"
+    },
+    "risk_layer": {
+      "requires_risk_assessment": true,
+      "max_unmitigated_critical": 0,
+      "max_unmitigated_high": 1,
+      "max_unmitigated_medium": 5,
+      "requires_mitigation_for": [
+        "critical",
+        "high"
+      ],
+      "annex_iv_ref": "§3 — Monitoring: known and foreseeable risks; §9 — Conformity assessment"
+    },
+    "evidence_layer": {
+      "requires_compliance_attestation": true,
+      "required_evidence_types": [
+        "build_attestation",
+        "compliance_attestation"
+      ],
+      "annex_iv_ref": "§7 — Standards applied; §9 — Conformity assessment procedure"
+    },
+    "audit_log": {
+      "requires_audit_trail": true,
+      "annex_iv_ref": "§3 — Audit trail; §6 — Lifecycle changes; §9 — Internal audit evidence"
+    },
+    "attestation": {
+      "requires_signature": true,
+      "requires_timestamp": true,
+      "requires_expiry": true,
+      "annex_iv_ref": "§8 — EU Declaration of Conformity: signature, timestamp, version binding"
+    }
+  },
+  "annex_iv_coverage": {
+    "section_1_general_description": {
+      "covered_by": ["identity", "tool_layer"],
+      "status": "full"
+    },
+    "section_2_development_process": {
+      "covered_by": ["model_layer", "prompt_layer", "workflow_layer", "evidence_layer"],
+      "status": "full"
+    },
+    "section_3_monitoring_control": {
+      "covered_by": ["risk_layer", "audit_log", "policy_definitions"],
+      "status": "full"
+    },
+    "section_4_performance_metrics": {
+      "covered_by": ["evidence_layer"],
+      "status": "partial",
+      "note": "Requires explicit evaluation_artifact entries in evidence_layer"
+    },
+    "section_5_human_oversight": {
+      "covered_by": ["policy_definitions", "workflow_layer", "audit_log"],
+      "status": "full"
+    },
+    "section_6_lifecycle_changes": {
+      "covered_by": ["identity", "audit_log"],
+      "status": "full"
+    },
+    "section_7_standards_applied": {
+      "covered_by": ["evidence_layer"],
+      "status": "partial",
+      "note": "Requires explicit compliance_attestation entries citing standard references"
+    },
+    "section_8_declaration_of_conformity": {
+      "covered_by": ["attestation"],
+      "status": "full"
+    },
+    "section_9_conformity_assessment": {
+      "covered_by": ["evidence_layer", "audit_log", "risk_layer"],
+      "status": "full"
+    }
+  },
+  "metadata": {
+    "author": "WasmAgent",
+    "created_at": "2026-07-29T00:00:00Z",
+    "updated_at": "2026-07-29T00:00:00Z",
+    "documentation_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689",
+    "mapping_document": "specs/agentbom/ai-act-annex-iv-mapping.md"
+  }
+}
