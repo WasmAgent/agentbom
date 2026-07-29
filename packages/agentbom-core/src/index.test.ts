@@ -92,6 +92,31 @@ describe("validateAgentBOM", () => {
     expect(result.errorDetails.length).toBeGreaterThan(0);
     expect(result.errorDetails[0].field).toBe("(root)");
   });
+
+  // Test for #291 — ajv-formats must be registered so that uri format validation
+  // works without emitting "unknown format "uri" ignored" warnings.
+  it("validates distribution.registry_uri as a URI format (ajv-formats registered)", () => {
+    // Valid URI — should pass
+    const validResult = validateAgentBOM({
+      ...VALID_AGENTBOM,
+      distribution: { registry_uri: "https://registry.example.com/agents" },
+    });
+    expect(validResult.valid).toBe(true);
+    expect(validResult.errors).toHaveLength(0);
+
+    // Invalid URI — should fail with a format error (not silently ignored)
+    const invalidResult = validateAgentBOM({
+      ...VALID_AGENTBOM,
+      distribution: { registry_uri: "not-a-valid-uri!!!" },
+    });
+    // With ajv-formats registered, AJV enforces the uri format constraint.
+    // Without it, the invalid uri would silently pass — that was the bug (#291).
+    expect(invalidResult.valid).toBe(false);
+    const formatErr = invalidResult.errorDetails.find(
+      (e) => e.keyword === "format" && e.field.includes("registry_uri"),
+    );
+    expect(formatErr).toBeDefined();
+  });
 });
 
 const BASE_BOM = {

@@ -1,6 +1,7 @@
 import { getSchema } from "@wasmagent/protocol";
 import type { ErrorObject, ValidateFunction } from "ajv";
 import Ajv2020 from "ajv/dist/2020.js";
+import addFormats from "ajv-formats";
 
 export interface ValidationError {
   /** Dot-notation path to the offending field, e.g. "identity.agent_id". "(root)" for the document itself. */
@@ -25,6 +26,9 @@ let validateSchema: ValidateFunction | null = null;
 function getValidator(): ValidateFunction {
   if (validateSchema) return validateSchema;
   const ajv = new Ajv2020({ allErrors: true, strict: false });
+  // Register ajv-formats so that format keywords like "uri", "email", etc.
+  // are validated instead of silently ignored.
+  addFormats(ajv);
   const schema = getSchema("agentbom");
   validateSchema = ajv.compile(schema as import("ajv").AnySchema);
   if (!validateSchema) throw new Error("Failed to compile AgentBOM schema");
