@@ -1,5 +1,16 @@
 # @wasmagent/agentbom-core
 
+## 0.3.4
+
+### Patch Changes
+
+- 006daaf: fix: add ajv-formats dependency to suppress "unknown format uri ignored" warning (#291)
+
+  Registers ajv-formats with the AJV 2020 instance so that the `uri` format keyword
+  in the AgentBOM schema is enforced instead of being silently ignored.
+  Previously, AJV logged "unknown format \"uri\" ignored" twice per `validateAgentBOM()`
+  call, polluting startup logs in production.
+
 ## 0.3.3
 
 ### Patch Changes
