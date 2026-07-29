@@ -29,5 +29,13 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WasmAgent/agentbom.git"
+  },
+  "homepage": "https://github.com/WasmAgent/agentbom",
+  "bugs": {
+    "url": "https://github.com/WasmAgent/agentbom/issues"
   }
 }
