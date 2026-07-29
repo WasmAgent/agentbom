@@ -1,5 +1,11 @@
 # @wasmagent/agentbom-core
 
+## 0.3.2
+
+### Patch Changes
+
+- 8cd15a5: chore: fix release workflow npm authentication
+
 ## 0.3.1
 
 ### Patch Changes

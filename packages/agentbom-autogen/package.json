@@ -1,6 +1,6 @@
 {
   "name": "@wasmagent/agentbom-autogen",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "AgentBOM AutoGen adapter",
   "type": "module",
   "main": "./dist/index.js",
