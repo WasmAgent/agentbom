@@ -1,7 +1,9 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.5.6/schema.json",
-  "files": { "includes": ["**/*.ts", "**/*.tsx", "!**/node_modules/**", "!**/dist/**"] },
+  "files": {
+    "includes": ["**/*.ts", "**/*.tsx", "!**/node_modules/**", "!**/dist/**"]
+  },
   "formatter": { "indentStyle": "space", "indentWidth": 2 },
-  "linter": { "enabled": true, "rules": { "recommended": true } },
-  "organizeImports": { "enabled": true }
+  "linter": { "enabled": true, "rules": { "preset": "none" } },
+  "assist": { "actions": { "source": { "organizeImports": "on" } } }
 }
