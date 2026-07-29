@@ -1,5 +1,12 @@
 # @wasmagent/agentbom-autogen
 
+## 0.3.1
+
+### Patch Changes
+
+- Updated dependencies [a067bb7]
+  - @wasmagent/agentbom-core@0.3.1
+
 ## 0.3.0
 
 ### Minor Changes
