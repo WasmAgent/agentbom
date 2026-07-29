@@ -1,7 +1,7 @@
 {
   "name": "@wasmagent/agentbom-cli",
-  "version": "0.1.0",
-  "description": "AgentBOM developer CLI \u2014 BOM generation, compliance checking, regulatory reporting, trust chain verification, drift monitoring, and marketplace export",
+  "version": "0.2.0",
+  "description": "AgentBOM developer CLI — BOM generation, compliance checking, regulatory reporting, trust chain verification, drift monitoring, and marketplace export",
   "type": "module",
   "main": "./dist/index.js",
   "bin": {

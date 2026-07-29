@@ -1,6 +1,6 @@
 {
   "name": "@wasmagent/agentbom-langchain",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "AgentBOM LangChain adapter",
   "type": "module",
   "main": "./dist/index.js",
