@@ -1,5 +1,19 @@
 # @wasmagent/agentbom-langchain
 
+## 0.3.0
+
+### Minor Changes
+
+- b8d3aa8: feat: initial npm publication of @wasmagent/agentbom packages
+
+  Publishes AgentBOM validator, compliance checker, version migrator,
+  diff utilities, and framework adapters migrated from agent-trust-infra.
+
+### Patch Changes
+
+- Updated dependencies [b8d3aa8]
+  - @wasmagent/agentbom-core@0.3.0
+
 ## 0.2.0
 
 ### Minor Changes
