@@ -1,0 +1,10 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.0.0/schema.json",
+  "changelog": "@changesets/changelog-git",
+  "commit": false,
+  "linked": [["@wasmagent/agentbom-core", "@wasmagent/agentbom-autogen", "@wasmagent/agentbom-langchain", "@wasmagent/agentbom-llamaindex"]],
+  "access": "public",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": []
+}
