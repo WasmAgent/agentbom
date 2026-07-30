@@ -7,7 +7,11 @@
 import { createPublicKey, verify } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { isExpired, validateTrustPassport } from "@openagentaudit/passport";
+import {
+  isExpired,
+  type TrustPassport,
+  validateTrustPassport,
+} from "@openagentaudit/passport";
 
 // isRecord is a private utility not exported by @openagentaudit/passport
 function isRecord(v: unknown): v is Record<string, unknown> {
@@ -189,7 +193,7 @@ export function verifySignedPassport(options: VerifyOptions): VerifyResult {
   }
 
   // Also check passport validity.expires_at
-  if (isExpired(payload as { validity?: { expires_at?: string } })) {
+  if (isExpired(payload as unknown as TrustPassport)) {
     expired = true;
     const expiresAt = (payload.validity as Record<string, unknown>)?.expires_at;
     if (expiresAt && !errors.some((e) => e.includes("expired"))) {

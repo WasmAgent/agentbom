@@ -13,7 +13,7 @@
     },
     "packages/agentbom-autogen": {
       "name": "@wasmagent/agentbom-autogen",
-      "version": "0.3.3",
+      "version": "0.3.5",
       "dependencies": {
         "@wasmagent/agentbom-core": "workspace:*",
       },
@@ -25,7 +25,7 @@
     },
     "packages/agentbom-cli": {
       "name": "@wasmagent/agentbom-cli",
-      "version": "0.2.0",
+      "version": "0.2.2",
       "bin": {
         "agentbom": "./dist/index.js",
         "agent-trust": "./dist/index.js",
@@ -37,10 +37,15 @@
         "@wasmagent/mcp-posture": "^0.2.0",
         "prom-client": "^15.1.0",
       },
+      "devDependencies": {
+        "@types/bun": "^1.3.14",
+        "@types/node": "^26.1.2",
+        "typescript": "^5.9.3",
+      },
     },
     "packages/agentbom-core": {
       "name": "@wasmagent/agentbom-core",
-      "version": "0.3.3",
+      "version": "0.4.0",
       "dependencies": {
         "@wasmagent/protocol": "^0.1.7",
         "ajv": "^8.20.0",
@@ -54,7 +59,7 @@
     },
     "packages/agentbom-langchain": {
       "name": "@wasmagent/agentbom-langchain",
-      "version": "0.3.3",
+      "version": "0.3.5",
       "dependencies": {
         "@wasmagent/agentbom-core": "workspace:*",
       },
@@ -66,7 +71,7 @@
     },
     "packages/agentbom-llamaindex": {
       "name": "@wasmagent/agentbom-llamaindex",
-      "version": "0.3.3",
+      "version": "0.3.5",
       "dependencies": {
         "@wasmagent/agentbom-core": "workspace:*",
       },

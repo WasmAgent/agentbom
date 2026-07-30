@@ -28,6 +28,7 @@ import { fileURLToPath } from "node:url";
 import {
   inspectTrustPassport,
   isExpired,
+  type TrustPassport,
   validateTrustPassport,
 } from "@openagentaudit/passport";
 import { inspectAgentBOM, validateAgentBOM } from "@wasmagent/agentbom-core";
@@ -375,12 +376,12 @@ function runPassportStep(exampleDir: string): ChainStepResult {
         "trust-passport: posture_ref.snapshot_id does not match posture identity.snapshot_id",
       );
     }
-    if (isExpired(passportObj)) {
+    if (isExpired(passportObj as unknown as TrustPassport)) {
       errors.push("trust-passport: passport has expired");
     }
 
     outputHash = hashFile(passportPath);
-    summary = inspectTrustPassport(passportObj);
+    summary = inspectTrustPassport(passportObj as unknown as TrustPassport);
   } catch (err) {
     errors.push(
       `trust-passport: ${err instanceof Error ? err.message : String(err)}`,

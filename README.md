@@ -63,6 +63,19 @@ console.log(formatDriftAlert(alert));
 | `agentbom-llamaindex` | `@wasmagent/agentbom-llamaindex` | LlamaIndex adapter |
 | `agentbom-autogen` | `@wasmagent/agentbom-autogen` | AutoGen adapter |
 
+## Standards alignment
+
+AgentBOM aligns with the emerging **[CycloneDX Agent BOM](https://github.com/CycloneDX/specification/issues/895)**
+proposal (upstream issue #895). Rather than maintaining a parallel inventory
+standard, WasmAgent tracks that proposal and positions `@wasmagent/agentbom-core`
+as an **early reference implementation** of it — a runnable, published library
+that describes an agent's tools, permission scopes, model dependencies, and
+compliance posture as a single verifiable document.
+
+We contribute practical implementation experience upstream. Even where the final
+CycloneDX design differs from ours, being an early, publicly-engaged implementer
+is itself a verifiable external trust signal.
+
 ## Related repositories
 
 | Repository | Role |

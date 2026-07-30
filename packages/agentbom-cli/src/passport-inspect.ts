@@ -1,6 +1,10 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { inspectTrustPassport, isExpired } from "@openagentaudit/passport";
+import {
+  inspectTrustPassport,
+  isExpired,
+  type TrustPassport,
+} from "@openagentaudit/passport";
 
 export function inspectPassportCommand(filePath: string): number {
   const resolvedPath = resolve(filePath);
@@ -31,9 +35,11 @@ export function inspectPassportCommand(filePath: string): number {
   const passport = data as Record<string, unknown>;
   const identity = passport.identity as Record<string, string> | undefined;
 
-  console.log(inspectTrustPassport(passport));
+  console.log(inspectTrustPassport(passport as unknown as TrustPassport));
   console.log(`  Issuer:   ${identity?.issuer ?? "?"}`);
-  console.log(`  Status:   ${isExpired(passport) ? "EXPIRED" : "Active"}`);
+  console.log(
+    `  Status:   ${isExpired(passport as unknown as TrustPassport) ? "EXPIRED" : "Active"}`,
+  );
 
   return 0;
 }
