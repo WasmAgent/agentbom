@@ -1,5 +1,12 @@
 # @wasmagent/agentbom-cli
 
+## 0.2.2
+
+### Patch Changes
+
+- Updated dependencies [acab71f]
+  - @wasmagent/agentbom-core@0.4.0
+
 ## 0.2.1
 
 ### Patch Changes
