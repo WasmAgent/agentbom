@@ -62,6 +62,7 @@ console.log(formatDriftAlert(alert));
 | `agentbom-langchain` | `@wasmagent/agentbom-langchain` | LangChain adapter |
 | `agentbom-llamaindex` | `@wasmagent/agentbom-llamaindex` | LlamaIndex adapter |
 | `agentbom-autogen` | `@wasmagent/agentbom-autogen` | AutoGen adapter |
+| `agentbom-cli` | `@wasmagent/agentbom-cli` | Developer CLI — `agentbom validate`, `inspect`, compliance, trust-chain, drift |
 
 ## Standards alignment
 
@@ -81,15 +82,15 @@ is itself a verifiable external trust signal.
 | Repository | Role |
 |------------|------|
 | [`wasmagent-protocol`](https://github.com/WasmAgent/wasmagent-protocol) | Canonical AgentBOM JSON schema (SSOT) |
-| [`agent-trust-infra`](https://github.com/WasmAgent/agent-trust-infra) | AgentBOM + MCP Posture specifications and CLI (`agentbom validate`) |
+| [`agent-trust-infra`](https://github.com/WasmAgent/agent-trust-infra) | **Archived** — original home of these packages; superseded by this repo |
 | [`open-agent-audit`](https://github.com/WasmAgent/open-agent-audit) | Compliance report generation and audit dashboard |
 
 The schema that drives all validation in `agentbom-core` is defined in `wasmagent-protocol`
 and imported via `@wasmagent/protocol`. Never copy or redefine it here.
 
-The CLI (`agentbom validate`, `agentbom inspect`) is in `agent-trust-infra` for the transition
-period; it wraps the packages in this repo.
+The CLI (`agentbom validate`, `agentbom inspect`) now lives in this repo as
+`@wasmagent/agentbom-cli` (`packages/agentbom-cli`), wrapping the library packages here.
 
 ---
 
-*Migrated from [WasmAgent/agent-trust-infra](https://github.com/WasmAgent/agent-trust-infra) — the library packages have a new home here while the specifications and CLI remain in that repo during the transition.*
+*Migrated from [WasmAgent/agent-trust-infra](https://github.com/WasmAgent/agent-trust-infra) (now archived) — the library packages and the CLI have their permanent home here. Schema authority stays in [`wasmagent-protocol`](https://github.com/WasmAgent/wasmagent-protocol).*
