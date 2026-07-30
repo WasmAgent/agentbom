@@ -184,7 +184,9 @@ function checkOidcIssuer(
 ): boolean {
   // Method 1: structured extension access (Node.js ≥ 17.3)
   try {
-    const san = cert.getExtension("subjectAltName");
+    const san = (
+      cert as unknown as { getExtension?: (name: string) => unknown }
+    ).getExtension?.("subjectAltName");
     if (san && typeof san === "object") {
       const obj = san as Record<string, unknown>;
       const altNames = obj.altNames as

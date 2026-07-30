@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import {
   inspectTrustPassport,
   isExpired,
+  type TrustPassport,
   validateTrustPassport,
 } from "@openagentaudit/passport";
 
@@ -49,9 +50,9 @@ export function validatePassportCommand(filePath: string): number {
   }
 
   const passport = data as Record<string, unknown>;
-  console.log(inspectTrustPassport(passport));
+  console.log(inspectTrustPassport(passport as unknown as TrustPassport));
 
-  if (isExpired(passport)) {
+  if (isExpired(passport as unknown as TrustPassport)) {
     console.error("\nPassport has EXPIRED.");
     return 1;
   }

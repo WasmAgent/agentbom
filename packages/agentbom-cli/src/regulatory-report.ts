@@ -542,7 +542,12 @@ function assessRiskMonitoring(
     medium: 0,
     low: 0,
   };
-  const mitigatedCount = { critical: 0, high: 0, medium: 0, low: 0 };
+  const mitigatedCount: Record<string, number> = {
+    critical: 0,
+    high: 0,
+    medium: 0,
+    low: 0,
+  };
 
   for (const risk of riskLayer) {
     if (typeof risk !== "object" || risk === null) continue;

@@ -263,6 +263,7 @@ describe("runDriftCheck", () => {
       agentIdentity: "test-agent-sub",
       baselinePath,
       watchDir: tmpDir,
+      intervalSeconds: 30,
       once: true,
     };
 
@@ -279,6 +280,7 @@ describe("runDriftCheck", () => {
       agentIdentity: "test-agent-sub",
       baselinePath,
       watchDir: tmpDir,
+      intervalSeconds: 30,
       once: true,
     };
 
@@ -301,6 +303,7 @@ describe("runDriftCheck", () => {
       agentIdentity: "test-agent-sub",
       baselinePath,
       watchDir: tmpDir,
+      intervalSeconds: 30,
       once: true,
     };
 
@@ -314,6 +317,7 @@ describe("runDriftCheck", () => {
       agentIdentity: "test-agent-sub",
       baselinePath: "/nonexistent/baseline.json",
       watchDir: tmpDir,
+      intervalSeconds: 30,
       once: true,
     };
 
@@ -333,6 +337,7 @@ describe("runDriftCheck", () => {
       agentIdentity: "test-agent-sub",
       baselinePath,
       watchDir: tmpDir,
+      intervalSeconds: 30,
       once: true,
     };
 
@@ -348,6 +353,7 @@ describe("runDriftCheck", () => {
       agentIdentity: "test-agent-sub",
       baselinePath,
       watchDir: tmpDir,
+      intervalSeconds: 30,
       once: true,
     };
 
