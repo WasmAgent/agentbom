@@ -10,6 +10,21 @@
 
 // ─── Types ──────────────────────────────────────────────────────
 
+export interface ControlResult {
+  /** Control ID — matches the rule section key (e.g. "identity", "tool_layer"). */
+  control_id: string;
+  /** Human-readable description of this control. */
+  description: string;
+  /** Whether this control passed (no errors). */
+  passed: boolean;
+  /** Error messages for this control. */
+  errors: string[];
+  /** Warning messages for this control. */
+  warnings: string[];
+  /** Checks that passed for this control. */
+  passed_checks: string[];
+}
+
 export interface ComplianceResult {
   compliant: boolean;
   profile_id: string;
@@ -20,6 +35,8 @@ export interface ComplianceResult {
   errors: string[];
   warnings: string[];
   passed_checks: string[];
+  /** Per-control pass/fail details. */
+  controls: ControlResult[];
 }
 
 export interface ComplianceProfile {
@@ -466,6 +483,28 @@ export function checkCompliance(
 
   const score = computeWeightedScore(checks, profile);
 
+  const CONTROL_DESCRIPTIONS: Record<string, string> = {
+    identity: "Agent identity validation",
+    tool_layer: "Tool inventory and permission validation",
+    risk_layer: "Risk assessment and mitigation validation",
+    attestation: "Attestation integrity validation",
+  };
+
+  const controlIds = [
+    "identity",
+    "tool_layer",
+    "risk_layer",
+    "attestation",
+  ] as const;
+  const controls: ControlResult[] = checks.map((check, i) => ({
+    control_id: controlIds[i],
+    description: CONTROL_DESCRIPTIONS[controlIds[i]],
+    passed: check.errors.length === 0,
+    errors: check.errors,
+    warnings: check.warnings,
+    passed_checks: check.passed,
+  }));
+
   const result: ComplianceResult = {
     compliant: score >= minScore,
     profile_id: profile.profile_id,
@@ -476,6 +515,7 @@ export function checkCompliance(
     errors: [],
     warnings: [],
     passed_checks: [],
+    controls,
   };
 
   for (const check of checks) {

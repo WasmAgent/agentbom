@@ -1308,3 +1308,247 @@ describe("formatDriftAlert", () => {
     expect(output).toContain("new_tool");
   });
 });
+
+describe("validateAgentBOM — workflow_layer (action_pathway) field validation", () => {
+  it("accepts a valid workflow_layer with steps", () => {
+    const result = validateAgentBOM({
+      ...VALID_AGENTBOM,
+      workflow_layer: [
+        {
+          workflow_id: "wf-001",
+          workflow_name: "Data Processing Pipeline",
+          description: "Reads data, processes it, and outputs results",
+          version: "1.0.0",
+          steps: [
+            {
+              step_id: "step-1",
+              action: "read_file",
+              description: "Read input data",
+              allowed_tools: ["fs-read"],
+            },
+            {
+              step_id: "step-2",
+              action: "process_data",
+              description: "Process the data",
+              depends_on: ["step-1"],
+              allowed_tools: ["data-processor"],
+            },
+            {
+              step_id: "step-3",
+              action: "write_output",
+              depends_on: ["step-2"],
+            },
+          ],
+        },
+      ],
+    });
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+  });
+
+  it("accepts a minimal workflow with just required fields", () => {
+    const result = validateAgentBOM({
+      ...VALID_AGENTBOM,
+      workflow_layer: [
+        {
+          workflow_id: "wf-min",
+          workflow_name: "Minimal Workflow",
+          steps: [{ step_id: "s1", action: "tool_call" }],
+        },
+      ],
+    });
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+  });
+
+  it("accepts empty workflow_layer array", () => {
+    const result = validateAgentBOM({
+      ...VALID_AGENTBOM,
+      workflow_layer: [],
+    });
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+  });
+
+  it("accepts multiple workflows in the action_pathway", () => {
+    const result = validateAgentBOM({
+      ...VALID_AGENTBOM,
+      workflow_layer: [
+        {
+          workflow_id: "wf-001",
+          workflow_name: "Ingest",
+          steps: [{ step_id: "s1", action: "ingest_data" }],
+        },
+        {
+          workflow_id: "wf-002",
+          workflow_name: "Transform",
+          steps: [
+            { step_id: "s1", action: "transform_data", depends_on: [] },
+            { step_id: "s2", action: "validate_output", depends_on: ["s1"] },
+          ],
+        },
+      ],
+    });
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+  });
+
+  it("rejects workflow missing required workflow_id", () => {
+    const result = validateAgentBOM({
+      ...VALID_AGENTBOM,
+      workflow_layer: [
+        {
+          workflow_name: "No ID Workflow",
+          steps: [{ step_id: "s1", action: "do_something" }],
+        },
+      ],
+    });
+    expect(result.valid).toBe(false);
+    expect(result.errors.length).toBeGreaterThan(0);
+    const idErr = result.errorDetails.find(
+      (e) => e.field.includes("workflow_layer") && e.keyword === "required",
+    );
+    expect(idErr).toBeDefined();
+  });
+
+  it("rejects workflow missing required workflow_name", () => {
+    const result = validateAgentBOM({
+      ...VALID_AGENTBOM,
+      workflow_layer: [
+        {
+          workflow_id: "wf-no-name",
+          steps: [{ step_id: "s1", action: "do_something" }],
+        },
+      ],
+    });
+    expect(result.valid).toBe(false);
+    const nameErr = result.errorDetails.find(
+      (e) => e.field.includes("workflow_layer") && e.keyword === "required",
+    );
+    expect(nameErr).toBeDefined();
+  });
+
+  it("rejects workflow missing required steps array", () => {
+    const result = validateAgentBOM({
+      ...VALID_AGENTBOM,
+      workflow_layer: [
+        {
+          workflow_id: "wf-no-steps",
+          workflow_name: "No Steps",
+        },
+      ],
+    });
+    expect(result.valid).toBe(false);
+    const stepsErr = result.errorDetails.find(
+      (e) => e.field.includes("workflow_layer") && e.keyword === "required",
+    );
+    expect(stepsErr).toBeDefined();
+  });
+
+  it("rejects a step missing required step_id", () => {
+    const result = validateAgentBOM({
+      ...VALID_AGENTBOM,
+      workflow_layer: [
+        {
+          workflow_id: "wf-bad-step",
+          workflow_name: "Bad Step Workflow",
+          steps: [{ action: "do_something" }],
+        },
+      ],
+    });
+    expect(result.valid).toBe(false);
+    const stepIdErr = result.errorDetails.find(
+      (e) => e.field.includes("workflow_layer") && e.keyword === "required",
+    );
+    expect(stepIdErr).toBeDefined();
+  });
+
+  it("rejects a step missing required action", () => {
+    const result = validateAgentBOM({
+      ...VALID_AGENTBOM,
+      workflow_layer: [
+        {
+          workflow_id: "wf-no-action",
+          workflow_name: "No Action Workflow",
+          steps: [{ step_id: "s1" }],
+        },
+      ],
+    });
+    expect(result.valid).toBe(false);
+    const actionErr = result.errorDetails.find(
+      (e) => e.field.includes("workflow_layer") && e.keyword === "required",
+    );
+    expect(actionErr).toBeDefined();
+  });
+
+  it("accepts workflow steps with depends_on referencing other steps", () => {
+    const result = validateAgentBOM({
+      ...VALID_AGENTBOM,
+      workflow_layer: [
+        {
+          workflow_id: "wf-deps",
+          workflow_name: "Dependency Workflow",
+          steps: [
+            { step_id: "step-a", action: "fetch_data" },
+            {
+              step_id: "step-b",
+              action: "process_data",
+              depends_on: ["step-a"],
+            },
+            {
+              step_id: "step-c",
+              action: "write_output",
+              depends_on: ["step-a", "step-b"],
+            },
+          ],
+        },
+      ],
+    });
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+  });
+
+  it("accepts workflow integrated with tool_layer references", () => {
+    const result = validateAgentBOM({
+      ...VALID_AGENTBOM,
+      tool_layer: [
+        {
+          tool_id: "web-search",
+          tool_name: "Web Search",
+          source: "builtin",
+          permissions: ["network:outbound"],
+        },
+        {
+          tool_id: "summarizer",
+          tool_name: "Summarizer",
+          source: "builtin",
+          permissions: [],
+        },
+      ],
+      workflow_layer: [
+        {
+          workflow_id: "wf-search-summarize",
+          workflow_name: "Search and Summarize",
+          description: "Searches the web and summarizes results",
+          steps: [
+            {
+              step_id: "search",
+              action: "web-search",
+              allowed_tools: ["web-search"],
+              description: "Execute web search",
+            },
+            {
+              step_id: "summarize",
+              action: "summarizer",
+              depends_on: ["search"],
+              allowed_tools: ["summarizer"],
+              description: "Summarize search results",
+            },
+          ],
+        },
+      ],
+    });
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+  });
+});

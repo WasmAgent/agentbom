@@ -10,15 +10,15 @@
  *   trust-cli subscribe <agent-identity> --baseline <path> [--watch <dir>] \
  *       [--callback <url>] [--interval <seconds>] [--once]
  */
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { resolve } from "node:path";
 import {
   classifyDriftEvents,
   type DriftAlert,
   diffAgentBOM,
   formatDriftAlert,
   validateAgentBOM,
-} from '@wasmagent/agentbom-core';
+} from "@wasmagent/agentbom-core";
 
 // ---- Types ----
 
@@ -59,13 +59,13 @@ export interface DriftCheckResult {
 function readJsonRecord(filePath: string): Record<string, unknown> | null {
   let raw: string;
   try {
-    raw = readFileSync(filePath, 'utf-8');
+    raw = readFileSync(filePath, "utf-8");
   } catch {
     return null;
   }
   try {
     const data = JSON.parse(raw);
-    if (typeof data === 'object' && data !== null && !Array.isArray(data)) {
+    if (typeof data === "object" && data !== null && !Array.isArray(data)) {
       return data as Record<string, unknown>;
     }
     return null;
@@ -79,7 +79,7 @@ function readJsonRecord(filePath: string): Record<string, unknown> | null {
  */
 function extractAgentId(data: Record<string, unknown>): string | undefined {
   const identity = data.identity as Record<string, unknown> | undefined;
-  if (identity && typeof identity.agent_id === 'string') {
+  if (identity && typeof identity.agent_id === "string") {
     return identity.agent_id;
   }
   return undefined;
@@ -90,7 +90,7 @@ function extractAgentId(data: Record<string, unknown>): string | undefined {
  */
 function extractTimestamp(data: Record<string, unknown>): string {
   const identity = data.identity as Record<string, unknown> | undefined;
-  if (identity && typeof identity.generated_at === 'string') {
+  if (identity && typeof identity.generated_at === "string") {
     return identity.generated_at;
   }
   return new Date().toISOString();
@@ -100,7 +100,10 @@ function extractTimestamp(data: Record<string, unknown>): string {
  * Scan a directory for JSON files and return paths of those that parse as
  * valid AgentBOM documents matching the given agent identity.
  */
-export function findAgentBOMFiles(dir: string, agentIdentity: string): string[] {
+export function findAgentBOMFiles(
+  dir: string,
+  agentIdentity: string,
+): string[] {
   let entries: string[];
   try {
     entries = readdirSync(dir);
@@ -110,7 +113,7 @@ export function findAgentBOMFiles(dir: string, agentIdentity: string): string[] 
 
   const matches: string[] = [];
   for (const entry of entries) {
-    if (!entry.endsWith('.json')) continue;
+    if (!entry.endsWith(".json")) continue;
     const fullPath = resolve(dir, entry);
     try {
       if (!statSync(fullPath).isFile()) continue;
@@ -152,7 +155,7 @@ export function runDriftCheck(config: SubscribeConfig): DriftCheckResult {
       hasDrift: false,
       alert: {
         agent_id: config.agentIdentity,
-        baseline_at: '',
+        baseline_at: "",
         current_at: new Date().toISOString(),
         events: [],
         hasHighSeverity: () => false,
@@ -170,7 +173,9 @@ export function runDriftCheck(config: SubscribeConfig): DriftCheckResult {
   const currentFiles = findAgentBOMFiles(config.watchDir, config.agentIdentity);
 
   // If the only file found is the baseline itself, no drift to detect
-  const nonBaselineFiles = currentFiles.filter((f) => resolve(f) !== resolve(config.baselinePath));
+  const nonBaselineFiles = currentFiles.filter(
+    (f) => resolve(f) !== resolve(config.baselinePath),
+  );
 
   // Combine all events from all non-baseline files
   const allAlerts: DriftAlert[] = [];
@@ -181,13 +186,21 @@ export function runDriftCheck(config: SubscribeConfig): DriftCheckResult {
 
     const currentAt = extractTimestamp(currentData);
     const diff = diffAgentBOM(baselineData, currentData);
-    const alert = classifyDriftEvents(diff, baselineAgentId, baselineAt, currentAt);
+    const alert = classifyDriftEvents(
+      diff,
+      baselineAgentId,
+      baselineAt,
+      currentAt,
+    );
     allAlerts.push(alert);
   }
 
   // Merge all alerts into one
   const mergedEvents = allAlerts.flatMap((a) => a.events);
-  const latestAt = allAlerts.length > 0 ? allAlerts[allAlerts.length - 1].current_at : baselineAt;
+  const latestAt =
+    allAlerts.length > 0
+      ? allAlerts[allAlerts.length - 1].current_at
+      : baselineAt;
 
   const mergedAlert: DriftAlert = {
     agent_id: baselineAgentId,
@@ -195,7 +208,9 @@ export function runDriftCheck(config: SubscribeConfig): DriftCheckResult {
     current_at: latestAt,
     events: mergedEvents,
     hasHighSeverity: () =>
-      mergedEvents.some((e) => e.severity === 'high' || e.severity === 'critical'),
+      mergedEvents.some(
+        (e) => e.severity === "high" || e.severity === "critical",
+      ),
     isEmpty: () => mergedEvents.length === 0,
   };
 
@@ -233,19 +248,23 @@ export async function notifyCallback(
     };
 
     const response = await fetch(callbackUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
       signal: AbortSignal.timeout(10000),
     });
 
     if (!response.ok) {
-      console.warn(`Callback warning: HTTP ${response.status} from ${callbackUrl}`);
+      console.warn(
+        `Callback warning: HTTP ${response.status} from ${callbackUrl}`,
+      );
       return false;
     }
     return true;
   } catch (err) {
-    console.warn(`Callback warning: ${err instanceof Error ? err.message : String(err)}`);
+    console.warn(
+      `Callback warning: ${err instanceof Error ? err.message : String(err)}`,
+    );
     return false;
   }
 }
@@ -262,38 +281,38 @@ function sleep(ms: number): Promise<void> {
 // ---- CLI command ----
 
 const SUBSCRIBE_USAGE = [
-  'Usage: agent-trust subscribe <agent-identity> --baseline <path> [options]',
-  '',
-  'Set up continuous monitoring for trust artifact updates from a specific',
-  'agent publisher.  Watches for AgentBOM files matching the given identity,',
-  'detects drift against a baseline, and optionally sends notification callbacks.',
-  '',
-  'Arguments:',
-  '  <agent-identity>     Agent ID to monitor (matches AgentBOM identity.agent_id)',
-  '',
-  'Required:',
-  '  --baseline <path>    Path to the baseline AgentBOM snapshot',
-  '',
-  'Options:',
-  '  --watch <dir>        Directory to watch for updated artifacts',
-  '                       (default: directory containing the baseline file)',
-  '  --callback <url>     URL for drift notification callbacks (HTTP POST)',
-  '  --interval <seconds> Polling interval in seconds (default: 30, min: 5)',
-  '  --once               Run a single drift check and exit (no polling loop)',
-  '  --help, -h           Show this help message',
-  '',
-  'Examples:',
-  '  agent-trust subscribe my-agent --baseline ./baseline/agentbom.json --once',
-  '  agent-trust subscribe my-agent --baseline ./baseline.json --watch ./artifacts --interval 60',
-  '  agent-trust subscribe my-agent --baseline ./baseline.json --callback https://hooks.example.com/drift',
-].join('\n');
+  "Usage: agent-trust subscribe <agent-identity> --baseline <path> [options]",
+  "",
+  "Set up continuous monitoring for trust artifact updates from a specific",
+  "agent publisher.  Watches for AgentBOM files matching the given identity,",
+  "detects drift against a baseline, and optionally sends notification callbacks.",
+  "",
+  "Arguments:",
+  "  <agent-identity>     Agent ID to monitor (matches AgentBOM identity.agent_id)",
+  "",
+  "Required:",
+  "  --baseline <path>    Path to the baseline AgentBOM snapshot",
+  "",
+  "Options:",
+  "  --watch <dir>        Directory to watch for updated artifacts",
+  "                       (default: directory containing the baseline file)",
+  "  --callback <url>     URL for drift notification callbacks (HTTP POST)",
+  "  --interval <seconds> Polling interval in seconds (default: 30, min: 5)",
+  "  --once               Run a single drift check and exit (no polling loop)",
+  "  --help, -h           Show this help message",
+  "",
+  "Examples:",
+  "  agent-trust subscribe my-agent --baseline ./baseline/agentbom.json --once",
+  "  agent-trust subscribe my-agent --baseline ./baseline.json --watch ./artifacts --interval 60",
+  "  agent-trust subscribe my-agent --baseline ./baseline.json --callback https://hooks.example.com/drift",
+].join("\n");
 
 /**
  * Parse subscribe command arguments into a {@link SubscribeConfig}.
  * Returns the config on success, or a usage string (error message) on failure.
  */
 export function parseSubscribeArgs(args: string[]): SubscribeConfig | string {
-  if (args.length === 0 || args[0] === '--help' || args[0] === '-h') {
+  if (args.length === 0 || args[0] === "--help" || args[0] === "-h") {
     return SUBSCRIBE_USAGE;
   }
 
@@ -308,23 +327,23 @@ export function parseSubscribeArgs(args: string[]): SubscribeConfig | string {
     const arg = args[i];
     const next = args[i + 1];
 
-    if (arg === '--baseline' && next) {
+    if (arg === "--baseline" && next) {
       baselinePath = next;
       i++;
-    } else if (arg === '--watch' && next) {
+    } else if (arg === "--watch" && next) {
       watchDir = next;
       i++;
-    } else if (arg === '--callback' && next) {
+    } else if (arg === "--callback" && next) {
       callbackUrl = next;
       i++;
-    } else if (arg === '--interval' && next) {
+    } else if (arg === "--interval" && next) {
       const n = Number.parseInt(next, 10);
       if (Number.isNaN(n) || n < 5) {
         return `Error: --interval must be an integer ≥ 5, got "${next}"`;
       }
       intervalSeconds = n;
       i++;
-    } else if (arg === '--once') {
+    } else if (arg === "--once") {
       once = true;
     } else {
       return `Error: unknown argument "${arg}"`;
@@ -332,11 +351,13 @@ export function parseSubscribeArgs(args: string[]): SubscribeConfig | string {
   }
 
   if (!baselinePath) {
-    return 'Error: --baseline <path> is required';
+    return "Error: --baseline <path> is required";
   }
 
   const resolvedBaseline = resolve(baselinePath);
-  const resolvedWatchDir = watchDir ? resolve(watchDir) : resolve(resolvedBaseline, '..');
+  const resolvedWatchDir = watchDir
+    ? resolve(watchDir)
+    : resolve(resolvedBaseline, "..");
 
   return {
     agentIdentity,
@@ -356,9 +377,9 @@ export function parseSubscribeArgs(args: string[]): SubscribeConfig | string {
  */
 export async function subscribeCommand(args: string[]): Promise<number> {
   const parsed = parseSubscribeArgs(args);
-  if (typeof parsed === 'string') {
-    if (parsed.startsWith('Usage:') || parsed.startsWith('Error:')) {
-      if (parsed.startsWith('Usage:')) {
+  if (typeof parsed === "string") {
+    if (parsed.startsWith("Usage:") || parsed.startsWith("Error:")) {
+      if (parsed.startsWith("Usage:")) {
         console.log(parsed);
         return 0;
       }
@@ -375,13 +396,17 @@ export async function subscribeCommand(args: string[]): Promise<number> {
   // Validate baseline exists and is a valid AgentBOM
   const baselineData = readJsonRecord(config.baselinePath);
   if (!baselineData) {
-    console.error(`Error: cannot read baseline AgentBOM at "${config.baselinePath}"`);
+    console.error(
+      `Error: cannot read baseline AgentBOM at "${config.baselinePath}"`,
+    );
     return 1;
   }
 
   const baselineValidation = validateAgentBOM(baselineData);
   if (!baselineValidation.valid) {
-    console.error(`Error: baseline AgentBOM validation failed at "${config.baselinePath}":`);
+    console.error(
+      `Error: baseline AgentBOM validation failed at "${config.baselinePath}":`,
+    );
     for (const err of baselineValidation.errors) {
       console.error(`  - ${err}`);
     }
@@ -392,21 +417,21 @@ export async function subscribeCommand(args: string[]): Promise<number> {
 
   // Mode banner
   const modeLabel = config.once
-    ? 'single-check'
+    ? "single-check"
     : `continuous (interval: ${config.intervalSeconds}s)`;
   console.log(`Trust Subscribe — monitoring agent "${baselineAgentId}"`);
   console.log(`  Baseline:   ${config.baselinePath}`);
   console.log(`  Watch dir:  ${config.watchDir}`);
-  console.log(`  Callback:   ${config.callbackUrl ?? '(none)'}`);
+  console.log(`  Callback:   ${config.callbackUrl ?? "(none)"}`);
   console.log(`  Mode:       ${modeLabel}`);
-  console.log('');
+  console.log("");
 
   if (config.once) {
     // Single-check mode
     const result = runDriftCheck(config);
 
     if (result.hasDrift) {
-      console.log('DRIFT DETECTED');
+      console.log("DRIFT DETECTED");
     }
     console.log(result.formatted);
 
@@ -414,9 +439,9 @@ export async function subscribeCommand(args: string[]): Promise<number> {
       console.log(`\nSending notification to ${config.callbackUrl}...`);
       const sent = await notifyCallback(config.callbackUrl, result);
       if (sent) {
-        console.log('Notification sent successfully.');
+        console.log("Notification sent successfully.");
       } else {
-        console.warn('Notification delivery failed.');
+        console.warn("Notification delivery failed.");
       }
     }
 
@@ -442,7 +467,7 @@ export async function subscribeCommand(args: string[]): Promise<number> {
         // Fire-and-forget callback
         notifyCallback(config.callbackUrl, result).then((sent) => {
           if (!sent) {
-            console.warn('  Callback delivery failed.');
+            console.warn("  Callback delivery failed.");
           }
         });
       }
@@ -456,7 +481,9 @@ export async function subscribeCommand(args: string[]): Promise<number> {
         }
       }
     } else {
-      console.log(`${cycleLabel} — no drift (${result.scannedFiles.length} file(s) scanned)`);
+      console.log(
+        `${cycleLabel} — no drift (${result.scannedFiles.length} file(s) scanned)`,
+      );
     }
 
     await sleep(config.intervalSeconds * 1000);

@@ -943,7 +943,50 @@ const SCHEMA_FIELDS_V0_1: SchemaFieldDescriptor[] = [
     type: "array",
     required: false,
     since: "0.1",
-    description: "Workflow definitions",
+    description: "Action pathway definitions",
+  },
+  {
+    path: "workflow_layer[].workflow_id",
+    type: "string",
+    required: true,
+    since: "0.1",
+    description: "Unique workflow identifier",
+  },
+  {
+    path: "workflow_layer[].workflow_name",
+    type: "string",
+    required: true,
+    since: "0.1",
+    description: "Human-readable workflow name",
+  },
+  {
+    path: "workflow_layer[].steps",
+    type: "array",
+    required: true,
+    since: "0.1",
+    description: "Ordered list of steps in this workflow",
+  },
+  {
+    path: "workflow_layer[].steps[].step_id",
+    type: "string",
+    required: true,
+    since: "0.1",
+    description: "Unique step identifier within the workflow",
+  },
+  {
+    path: "workflow_layer[].steps[].action",
+    type: "string",
+    required: true,
+    since: "0.1",
+    description:
+      "Action to perform: tool_id, prompt name, sub_workflow, or decision",
+  },
+  {
+    path: "workflow_layer[].steps[].allowed_tools",
+    type: "array",
+    required: false,
+    since: "0.1",
+    description: "Tool IDs allowed at this step",
   },
   {
     path: "agent_collaboration",
@@ -1822,6 +1865,7 @@ export function formatDriftAlert(alert: DriftAlert): string {
 export {
   type ComplianceProfile,
   type ComplianceResult,
+  type ControlResult,
   checkCompliance,
   computeWeightedScore,
 } from "./compliance.js";

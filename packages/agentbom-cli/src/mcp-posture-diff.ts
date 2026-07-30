@@ -1,18 +1,21 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import {
   diffMCPPosture,
   formatPostureDiff,
   validateMCPPosture,
-} from '@wasmagent/mcp-posture';
+} from "@wasmagent/mcp-posture";
 
-export function diffMCPPostureCommand(oldFilePath: string, newFilePath: string): number {
+export function diffMCPPostureCommand(
+  oldFilePath: string,
+  newFilePath: string,
+): number {
   const oldPath = resolve(oldFilePath);
   const newPath = resolve(newFilePath);
 
   let oldRaw: string;
   try {
-    oldRaw = readFileSync(oldPath, 'utf-8');
+    oldRaw = readFileSync(oldPath, "utf-8");
   } catch {
     console.error(`Error: cannot read file "${oldPath}"`);
     return 1;
@@ -20,7 +23,7 @@ export function diffMCPPostureCommand(oldFilePath: string, newFilePath: string):
 
   let newRaw: string;
   try {
-    newRaw = readFileSync(newPath, 'utf-8');
+    newRaw = readFileSync(newPath, "utf-8");
   } catch {
     console.error(`Error: cannot read file "${newPath}"`);
     return 1;
@@ -65,7 +68,7 @@ export function diffMCPPostureCommand(oldFilePath: string, newFilePath: string):
     newData as Record<string, unknown>,
   );
 
-  console.log('Comparing MCP Posture snapshots:');
+  console.log("Comparing MCP Posture snapshots:");
   console.log(`  old: ${oldPath}`);
   console.log(`  new: ${newPath}`);
   console.log();

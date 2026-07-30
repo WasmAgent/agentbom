@@ -1,18 +1,21 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import {
   diffAgentBOM,
   formatAgentBOMDiff,
   validateAgentBOM,
-} from '@wasmagent/agentbom-core';
+} from "@wasmagent/agentbom-core";
 
-export function diffAgentBOMCommand(oldFilePath: string, newFilePath: string): number {
+export function diffAgentBOMCommand(
+  oldFilePath: string,
+  newFilePath: string,
+): number {
   const oldPath = resolve(oldFilePath);
   const newPath = resolve(newFilePath);
 
   let oldRaw: string;
   try {
-    oldRaw = readFileSync(oldPath, 'utf-8');
+    oldRaw = readFileSync(oldPath, "utf-8");
   } catch {
     console.error(`Error: cannot read file "${oldPath}"`);
     return 1;
@@ -20,7 +23,7 @@ export function diffAgentBOMCommand(oldFilePath: string, newFilePath: string): n
 
   let newRaw: string;
   try {
-    newRaw = readFileSync(newPath, 'utf-8');
+    newRaw = readFileSync(newPath, "utf-8");
   } catch {
     console.error(`Error: cannot read file "${newPath}"`);
     return 1;
@@ -64,7 +67,7 @@ export function diffAgentBOMCommand(oldFilePath: string, newFilePath: string): n
   const newBom = newData as Record<string, unknown>;
   const diff = diffAgentBOM(oldBom, newBom);
 
-  console.log('Comparing AgentBOMs:');
+  console.log("Comparing AgentBOMs:");
   console.log(`  old: ${oldPath}`);
   console.log(`  new: ${newPath}`);
   console.log();

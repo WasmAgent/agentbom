@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
-import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
-import { validateAgentBOM } from '@wasmagent/agentbom-core';
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { validateAgentBOM } from "@wasmagent/agentbom-core";
 
 /** AgentBOM structure for dashboard generation */
 export interface AgentBOM {
@@ -78,35 +78,39 @@ export function generateDashboardHTML(bom: AgentBOM): string {
 
   // Calculate statistics
   const totalTools = toolLayer.length;
-  const builtInTools = toolLayer.filter((t) => t.source === 'builtin').length;
-  const mcpTools = toolLayer.filter((t) => t.source === 'mcp').length;
-  const pluginTools = toolLayer.filter((t) => t.source === 'plugin').length;
+  const builtInTools = toolLayer.filter((t) => t.source === "builtin").length;
+  const mcpTools = toolLayer.filter((t) => t.source === "mcp").length;
+  const pluginTools = toolLayer.filter((t) => t.source === "plugin").length;
 
   const riskStats = {
-    critical: riskLayer.filter((r) => r.severity === 'critical').length,
-    high: riskLayer.filter((r) => r.severity === 'high').length,
-    medium: riskLayer.filter((r) => r.severity === 'medium').length,
-    low: riskLayer.filter((r) => r.severity === 'low').length,
-    info: riskLayer.filter((r) => r.severity === 'info').length,
+    critical: riskLayer.filter((r) => r.severity === "critical").length,
+    high: riskLayer.filter((r) => r.severity === "high").length,
+    medium: riskLayer.filter((r) => r.severity === "medium").length,
+    low: riskLayer.filter((r) => r.severity === "low").length,
+    info: riskLayer.filter((r) => r.severity === "info").length,
   };
 
-  const openRisks = riskLayer.filter((r) => r.status === 'open').length;
-  const acceptedRisks = riskLayer.filter((r) => r.status === 'accepted').length;
-  const mitigatedRisks = riskLayer.filter((r) => r.status === 'mitigated').length;
+  const openRisks = riskLayer.filter((r) => r.status === "open").length;
+  const acceptedRisks = riskLayer.filter((r) => r.status === "accepted").length;
+  const mitigatedRisks = riskLayer.filter(
+    (r) => r.status === "mitigated",
+  ).length;
 
   const auditEvents = auditLog.length;
-  const successfulEvents = auditLog.filter((a) => a.outcome === 'success').length;
-  const failedEvents = auditLog.filter((a) => a.outcome === 'failure').length;
+  const successfulEvents = auditLog.filter(
+    (a) => a.outcome === "success",
+  ).length;
+  const failedEvents = auditLog.filter((a) => a.outcome === "failure").length;
 
   const severityColor = (severity: string): string => {
     const colors = {
-      critical: '#dc2626',
-      high: '#ea580c',
-      medium: '#ca8a04',
-      low: '#16a34a',
-      info: '#2563eb',
+      critical: "#dc2626",
+      high: "#ea580c",
+      medium: "#ca8a04",
+      low: "#16a34a",
+      info: "#2563eb",
     };
-    return colors[severity as keyof typeof colors] || '#6b7280';
+    return colors[severity as keyof typeof colors] || "#6b7280";
   };
 
   const statusBadge = (status: string): string => {
@@ -116,7 +120,8 @@ export function generateDashboardHTML(bom: AgentBOM): string {
       mitigated: '<span class="badge badge-mitigated">Mitigated</span>',
     };
     return (
-      badges[status as keyof typeof badges] || `<span class="badge badge-unknown">${status}</span>`
+      badges[status as keyof typeof badges] ||
+      `<span class="badge badge-unknown">${status}</span>`
     );
   };
 
@@ -125,7 +130,7 @@ export function generateDashboardHTML(bom: AgentBOM): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agent Trust Dashboard - ${identity.agent_name || 'Unknown Agent'}</title>
+  <title>Agent Trust Dashboard - ${identity.agent_name || "Unknown Agent"}</title>
   <style>
     * {
       margin: 0;
@@ -546,11 +551,11 @@ export function generateDashboardHTML(bom: AgentBOM): string {
   <div class="container">
     <div class="header">
       <h1>🔒 Agent Trust Dashboard</h1>
-      <div class="subtitle">${identity.agent_name || 'Unknown Agent'}</div>
+      <div class="subtitle">${identity.agent_name || "Unknown Agent"}</div>
       <div class="meta">
-        Agent ID: ${identity.agent_id || 'N/A'} |
-        Version: ${identity.agent_version || 'N/A'} |
-        Generated: ${identity.generated_at ? new Date(identity.generated_at).toLocaleDateString() : 'N/A'}
+        Agent ID: ${identity.agent_id || "N/A"} |
+        Version: ${identity.agent_version || "N/A"} |
+        Generated: ${identity.generated_at ? new Date(identity.generated_at).toLocaleDateString() : "N/A"}
       </div>
     </div>
 
@@ -586,15 +591,15 @@ export function generateDashboardHTML(bom: AgentBOM): string {
       <div class="info-grid">
         <div class="info-card">
           <div class="label">Provider</div>
-          <div class="value">${modelLayer.provider || 'N/A'}</div>
+          <div class="value">${modelLayer.provider || "N/A"}</div>
         </div>
         <div class="info-card">
           <div class="label">Model ID</div>
-          <div class="value">${modelLayer.model_id || 'N/A'}</div>
+          <div class="value">${modelLayer.model_id || "N/A"}</div>
         </div>
         <div class="info-card">
           <div class="label">Model Version</div>
-          <div class="value">${modelLayer.model_version || 'N/A'}</div>
+          <div class="value">${modelLayer.model_version || "N/A"}</div>
         </div>
         <div class="info-card">
           <div class="label">Capabilities</div>
@@ -602,7 +607,7 @@ export function generateDashboardHTML(bom: AgentBOM): string {
             <div class="capabilities-list">
               ${(modelLayer.capabilities || [])
                 .map((cap) => `<span class="capability-tag">${cap}</span>`)
-                .join('')}
+                .join("")}
             </div>
           </div>
         </div>
@@ -616,28 +621,28 @@ export function generateDashboardHTML(bom: AgentBOM): string {
           .map(
             (tool) => `
           <div class="tool-card">
-            <div class="tool-name">${tool.tool_name || 'Unnamed Tool'}</div>
-            <div class="tool-id">${tool.tool_id || 'No ID'}</div>
+            <div class="tool-name">${tool.tool_name || "Unnamed Tool"}</div>
+            <div class="tool-id">${tool.tool_id || "No ID"}</div>
             <div class="badges">
-              <span class="badge ${tool.source || 'builtin'}">${tool.source || 'builtin'}</span>
+              <span class="badge ${tool.source || "builtin"}">${tool.source || "builtin"}</span>
               ${(tool.risk_signals || [])
                 .map((signal) => `<span class="badge-risk">⚠️ ${signal}</span>`)
-                .join('')}
+                .join("")}
             </div>
             <div class="permissions">
               <div class="permissions-title">Permissions:</div>
               <div class="permission-tags">
                 ${(tool.permissions || [])
                   .map((perm) => `<span class="permission-tag">${perm}</span>`)
-                  .join('')}
+                  .join("")}
               </div>
             </div>
           </div>
         `,
           )
-          .join('')}
+          .join("")}
       </div>
-      ${toolLayer.length === 0 ? '<div class="empty-state">No tools configured</div>' : ''}
+      ${toolLayer.length === 0 ? '<div class="empty-state">No tools configured</div>' : ""}
     </div>
 
     <div class="section">
@@ -678,18 +683,18 @@ export function generateDashboardHTML(bom: AgentBOM): string {
               .map(
                 (risk) => `
               <tr>
-                <td>${risk.risk_id || 'N/A'}</td>
+                <td>${risk.risk_id || "N/A"}</td>
                 <td>
-                  <span class="severity-indicator" style="background: ${severityColor(risk.severity || 'info')}"></span>
-                  ${risk.severity || 'N/A'}
+                  <span class="severity-indicator" style="background: ${severityColor(risk.severity || "info")}"></span>
+                  ${risk.severity || "N/A"}
                 </td>
-                <td>${risk.category || 'N/A'}</td>
-                <td>${risk.description || 'No description'}</td>
-                <td>${statusBadge(risk.status || 'unknown')}</td>
+                <td>${risk.category || "N/A"}</td>
+                <td>${risk.description || "No description"}</td>
+                <td>${statusBadge(risk.status || "unknown")}</td>
               </tr>
             `,
               )
-              .join('')}
+              .join("")}
           </tbody>
         </table>
       `
@@ -706,7 +711,7 @@ export function generateDashboardHTML(bom: AgentBOM): string {
             <div class="permission-tags" style="margin-top: 8px;">
               ${(permissionLayer.granted_scopes || [])
                 .map((scope) => `<span class="permission-tag">${scope}</span>`)
-                .join('')}
+                .join("")}
             </div>
           </div>
         </div>
@@ -715,8 +720,10 @@ export function generateDashboardHTML(bom: AgentBOM): string {
           <div class="value">
             <div class="permission-tags" style="margin-top: 8px;">
               ${(permissionLayer.data_access || [])
-                .map((access) => `<span class="permission-tag">${access}</span>`)
-                .join('')}
+                .map(
+                  (access) => `<span class="permission-tag">${access}</span>`,
+                )
+                .join("")}
             </div>
           </div>
         </div>
@@ -726,7 +733,7 @@ export function generateDashboardHTML(bom: AgentBOM): string {
             <div class="permission-tags" style="margin-top: 8px;">
               ${(permissionLayer.credential_references || [])
                 .map((cred) => `<span class="permission-tag">${cred}</span>`)
-                .join('')}
+                .join("")}
             </div>
           </div>
         </div>
@@ -740,15 +747,15 @@ export function generateDashboardHTML(bom: AgentBOM): string {
           .map(
             (evidence) => `
           <div class="evidence-item">
-            <div class="type">${evidence.type || 'Unknown'}</div>
-            <div class="hash">${evidence.hash || 'No hash'}</div>
-            <div class="timestamp">${evidence.timestamp ? new Date(evidence.timestamp).toLocaleString() : 'No timestamp'}</div>
+            <div class="type">${evidence.type || "Unknown"}</div>
+            <div class="hash">${evidence.hash || "No hash"}</div>
+            <div class="timestamp">${evidence.timestamp ? new Date(evidence.timestamp).toLocaleString() : "No timestamp"}</div>
           </div>
         `,
           )
-          .join('')}
+          .join("")}
       </div>
-      ${!evidenceLayer.evidence_hashes || evidenceLayer.evidence_hashes.length === 0 ? '<div class="empty-state">No evidence hashes found</div>' : ''}
+      ${!evidenceLayer.evidence_hashes || evidenceLayer.evidence_hashes.length === 0 ? '<div class="empty-state">No evidence hashes found</div>' : ""}
 
       ${
         evidenceLayer.aep_references && evidenceLayer.aep_references.length > 0
@@ -758,11 +765,11 @@ export function generateDashboardHTML(bom: AgentBOM): string {
           <div class="permission-tags">
             ${evidenceLayer.aep_references
               .map((ref) => `<span class="permission-tag">${ref}</span>`)
-              .join('')}
+              .join("")}
           </div>
         </div>
       `
-          : ''
+          : ""
       }
     </div>
 
@@ -776,27 +783,27 @@ export function generateDashboardHTML(bom: AgentBOM): string {
           .map(
             (entry) => `
           <div class="audit-entry">
-            <div class="timestamp">${entry.timestamp || 'No timestamp'}</div>
+            <div class="timestamp">${entry.timestamp || "No timestamp"}</div>
             <div class="event-type">
-              ${entry.event_type || 'Unknown Event'}
-              <span class="outcome ${entry.outcome || ''}">${entry.outcome || 'unknown'}</span>
+              ${entry.event_type || "Unknown Event"}
+              <span class="outcome ${entry.outcome || ""}">${entry.outcome || "unknown"}</span>
             </div>
             <div class="details">
-              Actor: ${entry.actor || 'Unknown'} | Resource: ${entry.resource || 'N/A'}
-              ${entry.details ? `<br>Details: <code>${JSON.stringify(entry.details)}</code>` : ''}
+              Actor: ${entry.actor || "Unknown"} | Resource: ${entry.resource || "N/A"}
+              ${entry.details ? `<br>Details: <code>${JSON.stringify(entry.details)}</code>` : ""}
             </div>
           </div>
         `,
           )
-          .join('')}
+          .join("")}
       </div>
     </div>
     `
-        : ''
+        : ""
     }
 
     <div class="footer">
-      <div>Generated by ${attestation.generator || 'Unknown'} v${attestation.generator_version || 'N/A'}</div>
+      <div>Generated by ${attestation.generator || "Unknown"} v${attestation.generator_version || "N/A"}</div>
       <div style="margin-top: 8px;">Report generated: ${new Date().toISOString()}</div>
     </div>
   </div>
@@ -817,16 +824,16 @@ export function generateDashboardHTML(bom: AgentBOM): string {
 
 /** Escape a value for safe interpolation into HTML. */
 function escapeHtml(value: unknown): string {
-  const s = value === undefined || value === null ? '' : String(value);
+  const s = value === undefined || value === null ? "" : String(value);
   return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
-type ControlStatus = 'pass' | 'warn' | 'fail';
+type ControlStatus = "pass" | "warn" | "fail";
 
 interface ControlResult {
   name: string;
@@ -835,12 +842,12 @@ interface ControlResult {
 }
 
 const CONTROL_LABELS: Record<string, string> = {
-  identity: 'Identity',
-  tools: 'Tool Inventory',
-  risks: 'Risk Mgmt',
-  permissions: 'Permissions',
-  evidence: 'Evidence',
-  attestation: 'Attestation',
+  identity: "Identity",
+  tools: "Tool Inventory",
+  risks: "Risk Mgmt",
+  permissions: "Permissions",
+  evidence: "Evidence",
+  attestation: "Attestation",
 };
 
 const SEVERITY_RANK: Record<string, number> = {
@@ -853,17 +860,28 @@ const SEVERITY_RANK: Record<string, number> = {
 
 function assessIdentity(bom: AgentBOM): ControlResult {
   const id = bom.identity || {};
-  const fields = [id.agent_id, id.agent_name, id.agent_version, id.deployment_context];
-  const present = fields.filter((f) => f !== undefined && String(f).trim() !== '').length;
+  const fields = [
+    id.agent_id,
+    id.agent_name,
+    id.agent_version,
+    id.deployment_context,
+  ];
+  const present = fields.filter(
+    (f) => f !== undefined && String(f).trim() !== "",
+  ).length;
   if (!bom.identity || present === 0) {
-    return { name: 'identity', status: 'fail', detail: 'No identity metadata' };
+    return { name: "identity", status: "fail", detail: "No identity metadata" };
   }
   if (present === fields.length) {
-    return { name: 'identity', status: 'pass', detail: 'Complete identity record' };
+    return {
+      name: "identity",
+      status: "pass",
+      detail: "Complete identity record",
+    };
   }
   return {
-    name: 'identity',
-    status: 'warn',
+    name: "identity",
+    status: "warn",
     detail: `${present}/${fields.length} identity fields present`,
   };
 }
@@ -871,22 +889,24 @@ function assessIdentity(bom: AgentBOM): ControlResult {
 function assessTools(bom: AgentBOM): ControlResult {
   const tools = bom.tool_layer || [];
   if (tools.length === 0) {
-    return { name: 'tools', status: 'fail', detail: 'No tool inventory' };
+    return { name: "tools", status: "fail", detail: "No tool inventory" };
   }
   const dangerous = tools.filter((t) => {
     const sig = t.risk_signals || [];
-    return sig.includes('command_execution') || sig.includes('privilege_escalation');
+    return (
+      sig.includes("command_execution") || sig.includes("privilege_escalation")
+    );
   }).length;
   if (dangerous === 0) {
     return {
-      name: 'tools',
-      status: 'pass',
+      name: "tools",
+      status: "pass",
       detail: `${tools.length} tools, no high-risk signals`,
     };
   }
   return {
-    name: 'tools',
-    status: 'warn',
+    name: "tools",
+    status: "warn",
     detail: `${tools.length} tools, ${dangerous} with high-risk signals`,
   };
 }
@@ -894,37 +914,63 @@ function assessTools(bom: AgentBOM): ControlResult {
 function assessRisks(bom: AgentBOM): ControlResult {
   const risks = bom.risk_layer || [];
   if (risks.length === 0) {
-    return { name: 'risks', status: 'pass', detail: 'No risks recorded' };
+    return { name: "risks", status: "pass", detail: "No risks recorded" };
   }
-  const open = risks.filter((r) => r.status === 'open');
-  const openCritical = open.filter((r) => r.severity === 'critical').length;
-  const openHigh = open.filter((r) => r.severity === 'high').length;
+  const open = risks.filter((r) => r.status === "open");
+  const openCritical = open.filter((r) => r.severity === "critical").length;
+  const openHigh = open.filter((r) => r.severity === "high").length;
   if (openCritical > 0) {
-    return { name: 'risks', status: 'fail', detail: `${openCritical} open critical risk(s)` };
+    return {
+      name: "risks",
+      status: "fail",
+      detail: `${openCritical} open critical risk(s)`,
+    };
   }
   if (openHigh > 2) {
-    return { name: 'risks', status: 'fail', detail: `${openHigh} open high risk(s)` };
+    return {
+      name: "risks",
+      status: "fail",
+      detail: `${openHigh} open high risk(s)`,
+    };
   }
   if (openHigh > 0) {
-    return { name: 'risks', status: 'warn', detail: `${openHigh} open high risk(s)` };
+    return {
+      name: "risks",
+      status: "warn",
+      detail: `${openHigh} open high risk(s)`,
+    };
   }
-  return { name: 'risks', status: 'pass', detail: 'All risks mitigated or accepted' };
+  return {
+    name: "risks",
+    status: "pass",
+    detail: "All risks mitigated or accepted",
+  };
 }
 
 function assessPermissions(bom: AgentBOM): ControlResult {
   const scopes = bom.permission_layer?.granted_scopes || [];
   if (scopes.length === 0) {
-    return { name: 'permissions', status: 'fail', detail: 'No permission scopes documented' };
+    return {
+      name: "permissions",
+      status: "fail",
+      detail: "No permission scopes documented",
+    };
   }
-  const highRisk = scopes.filter((s) => s === 'process:exec' || s === 'network:outbound').length;
+  const highRisk = scopes.filter(
+    (s) => s === "process:exec" || s === "network:outbound",
+  ).length;
   if (highRisk > 0) {
     return {
-      name: 'permissions',
-      status: 'warn',
+      name: "permissions",
+      status: "warn",
       detail: `${scopes.length} scopes incl. ${highRisk} high-risk`,
     };
   }
-  return { name: 'permissions', status: 'pass', detail: `${scopes.length} documented scopes` };
+  return {
+    name: "permissions",
+    status: "pass",
+    detail: `${scopes.length} documented scopes`,
+  };
 }
 
 function assessEvidence(bom: AgentBOM): ControlResult {
@@ -932,14 +978,22 @@ function assessEvidence(bom: AgentBOM): ControlResult {
   const hashes = ev.evidence_hashes?.length || 0;
   const aep = ev.aep_references?.length || 0;
   if (hashes === 0 && aep === 0) {
-    return { name: 'evidence', status: 'fail', detail: 'No evidence or AEP references' };
+    return {
+      name: "evidence",
+      status: "fail",
+      detail: "No evidence or AEP references",
+    };
   }
   if (hashes === 0 || aep === 0) {
-    return { name: 'evidence', status: 'warn', detail: 'Partial evidence coverage' };
+    return {
+      name: "evidence",
+      status: "warn",
+      detail: "Partial evidence coverage",
+    };
   }
   return {
-    name: 'evidence',
-    status: 'pass',
+    name: "evidence",
+    status: "pass",
     detail: `${hashes} evidence hash(es), ${aep} AEP ref(s)`,
   };
 }
@@ -947,18 +1001,22 @@ function assessEvidence(bom: AgentBOM): ControlResult {
 function assessAttestation(bom: AgentBOM): ControlResult {
   const att = bom.attestation || {};
   if (!att.generator) {
-    return { name: 'attestation', status: 'fail', detail: 'No attestation generator' };
+    return {
+      name: "attestation",
+      status: "fail",
+      detail: "No attestation generator",
+    };
   }
   if (!att.generator_version) {
     return {
-      name: 'attestation',
-      status: 'warn',
-      detail: 'Generator recorded, version missing',
+      name: "attestation",
+      status: "warn",
+      detail: "Generator recorded, version missing",
     };
   }
   return {
-    name: 'attestation',
-    status: 'pass',
+    name: "attestation",
+    status: "pass",
     detail: `${att.generator} v${att.generator_version}`,
   };
 }
@@ -975,7 +1033,11 @@ export function assessControls(bom: AgentBOM): ControlResult[] {
   ];
 }
 
-const STATUS_WEIGHT: Record<ControlStatus, number> = { pass: 2, warn: 1, fail: 0 };
+const STATUS_WEIGHT: Record<ControlStatus, number> = {
+  pass: 2,
+  warn: 1,
+  fail: 0,
+};
 
 /** Compute a 0-100 trust posture score for an AgentBOM from its control results. */
 export function postureScore(bom: AgentBOM): number {
@@ -987,13 +1049,13 @@ export function postureScore(bom: AgentBOM): number {
 
 /** Highest severity label among an AgentBOM's risks ('' when there are none). */
 export function maxSeverity(bom: AgentBOM): string {
-  let max = '';
+  let max = "";
   let rank = -1;
   for (const r of bom.risk_layer || []) {
-    const r2 = SEVERITY_RANK[r.severity || ''] ?? -1;
+    const r2 = SEVERITY_RANK[r.severity || ""] ?? -1;
     if (r2 > rank) {
       rank = r2;
-      max = r.severity || '';
+      max = r.severity || "";
     }
   }
   return max;
@@ -1015,12 +1077,12 @@ interface GraphEdge {
 }
 
 const GRAPH_KIND_COLORS: Record<string, string> = {
-  agent: '#1e3a8a',
-  model: '#0f766e',
-  mcp: '#b45309',
-  builtin: '#475569',
-  plugin: '#6d28d9',
-  permission: '#be123c',
+  agent: "#1e3a8a",
+  model: "#0f766e",
+  mcp: "#b45309",
+  builtin: "#475569",
+  plugin: "#6d28d9",
+  permission: "#be123c",
 };
 
 /** Derive a BOM dependency graph: agent -> model, MCP servers, tool groups, scopes. */
@@ -1028,43 +1090,53 @@ export function buildDependencyGraph(bom: AgentBOM): {
   nodes: GraphNode[];
   edges: GraphEdge[];
 } {
-  const agentId = bom.identity?.agent_id || 'agent';
+  const agentId = bom.identity?.agent_id || "agent";
   const nodes: GraphNode[] = [
-    { id: agentId, label: bom.identity?.agent_name || 'agent', kind: 'agent' },
+    { id: agentId, label: bom.identity?.agent_name || "agent", kind: "agent" },
   ];
   const edges: GraphEdge[] = [];
 
   if (bom.model_layer?.model_id) {
-    nodes.push({ id: 'model', label: bom.model_layer.model_id, kind: 'model' });
-    edges.push({ from: agentId, to: 'model' });
+    nodes.push({ id: "model", label: bom.model_layer.model_id, kind: "model" });
+    edges.push({ from: agentId, to: "model" });
   }
 
   const servers = new Set<string>();
   for (const t of bom.tool_layer || []) {
-    if (t.source === 'mcp' && t.mcp_server_id) servers.add(t.mcp_server_id);
+    if (t.source === "mcp" && t.mcp_server_id) servers.add(t.mcp_server_id);
   }
   for (const s of servers) {
     const id = `srv:${s}`;
-    nodes.push({ id, label: s, kind: 'mcp' });
+    nodes.push({ id, label: s, kind: "mcp" });
     edges.push({ from: agentId, to: id });
   }
 
   const tools = bom.tool_layer || [];
-  const builtin = tools.filter((t) => (t.source || 'builtin') === 'builtin').length;
-  const plugin = tools.filter((t) => t.source === 'plugin').length;
+  const builtin = tools.filter(
+    (t) => (t.source || "builtin") === "builtin",
+  ).length;
+  const plugin = tools.filter((t) => t.source === "plugin").length;
   if (builtin > 0) {
-    nodes.push({ id: 'builtin', label: `builtin tools (${builtin})`, kind: 'builtin' });
-    edges.push({ from: agentId, to: 'builtin' });
+    nodes.push({
+      id: "builtin",
+      label: `builtin tools (${builtin})`,
+      kind: "builtin",
+    });
+    edges.push({ from: agentId, to: "builtin" });
   }
   if (plugin > 0) {
-    nodes.push({ id: 'plugin', label: `plugin tools (${plugin})`, kind: 'plugin' });
-    edges.push({ from: agentId, to: 'plugin' });
+    nodes.push({
+      id: "plugin",
+      label: `plugin tools (${plugin})`,
+      kind: "plugin",
+    });
+    edges.push({ from: agentId, to: "plugin" });
   }
 
   const scopes = (bom.permission_layer?.granted_scopes || []).slice(0, 8);
   for (const sc of scopes) {
     const id = `perm:${sc}`;
-    nodes.push({ id, label: sc, kind: 'permission' });
+    nodes.push({ id, label: sc, kind: "permission" });
     edges.push({ from: agentId, to: id });
   }
 
@@ -1074,7 +1146,7 @@ export function buildDependencyGraph(bom: AgentBOM): {
 /** Render a single agent's dependency graph as a self-contained inline SVG. */
 export function renderDependencyGraphSVG(bom: AgentBOM): string {
   const { nodes, edges } = buildDependencyGraph(bom);
-  const agentId = bom.identity?.agent_id || 'agent';
+  const agentId = bom.identity?.agent_id || "agent";
   const dependents = nodes.filter((n) => n.id !== agentId);
   const width = 480;
   const agentX = 90;
@@ -1093,23 +1165,23 @@ export function renderDependencyGraphSVG(bom: AgentBOM): string {
     .map((e) => {
       const a = pos.get(e.from);
       const b = pos.get(e.to);
-      if (!a || !b) return '';
+      if (!a || !b) return "";
       return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#cbd5e1" stroke-width="1.5"/>`;
     })
-    .join('');
+    .join("");
 
   const nodeSvg = nodes
     .map((n) => {
       const p = pos.get(n.id);
-      if (!p) return '';
-      const fill = GRAPH_KIND_COLORS[n.kind] || '#475569';
+      if (!p) return "";
+      const fill = GRAPH_KIND_COLORS[n.kind] || "#475569";
       const text = escapeHtml(truncateLabel(n.label));
       if (n.id === agentId) {
         return `<circle cx="${p.x}" cy="${p.y}" r="34" fill="${fill}"/><text x="${p.x}" y="${p.y + 4}" text-anchor="middle" fill="white" font-size="9" font-weight="700">${text}</text>`;
       }
       return `<rect x="${p.x - 70}" y="${p.y - 14}" width="140" height="28" rx="6" fill="${fill}" opacity="0.92"/><text x="${p.x}" y="${p.y + 4}" text-anchor="middle" fill="white" font-size="10">${text}</text>`;
     })
-    .join('');
+    .join("");
 
   return `<svg viewBox="0 0 ${width} ${height}" width="100%" height="${height}" role="img" aria-label="BOM dependency graph">${edgeSvg}${nodeSvg}</svg>`;
 }
@@ -1131,10 +1203,13 @@ function parseTs(t?: string): number {
 }
 
 /** Merge audit logs across a fleet, sorted oldest-first by timestamp. */
-export function mergeAuditEntries(boms: { bom: AgentBOM; source: string }[]): FleetAuditEntry[] {
+export function mergeAuditEntries(
+  boms: { bom: AgentBOM; source: string }[],
+): FleetAuditEntry[] {
   const out: FleetAuditEntry[] = [];
   for (const { bom } of boms) {
-    const agent = bom.identity?.agent_name || bom.identity?.agent_id || 'unknown';
+    const agent =
+      bom.identity?.agent_name || bom.identity?.agent_id || "unknown";
     for (const e of bom.audit_log || []) {
       out.push({ agent, ...e });
     }
@@ -1144,59 +1219,65 @@ export function mergeAuditEntries(boms: { bom: AgentBOM; source: string }[]): Fl
 }
 
 const HEATMAP_CELL_CLASS: Record<ControlStatus, string> = {
-  pass: 'hm-pass',
-  warn: 'hm-warn',
-  fail: 'hm-fail',
+  pass: "hm-pass",
+  warn: "hm-warn",
+  fail: "hm-fail",
 };
 
 const SEVERITY_BADGE_CLASS: Record<string, string> = {
-  critical: 'risk-critical',
-  high: 'risk-high',
-  medium: 'risk-med',
-  low: 'risk-low',
+  critical: "risk-critical",
+  high: "risk-high",
+  medium: "risk-med",
+  low: "risk-low",
 };
 
 /** Generate a fleet trust analytics dashboard HTML document. */
-export function generateFleetDashboardHTML(boms: { bom: AgentBOM; source: string }[]): string {
+export function generateFleetDashboardHTML(
+  boms: { bom: AgentBOM; source: string }[],
+): string {
   let totalTools = 0;
   let openRisks = 0;
   let openCriticalHigh = 0;
   let withAttestation = 0;
   for (const { bom } of boms) {
     totalTools += (bom.tool_layer || []).length;
-    const open = (bom.risk_layer || []).filter((r) => r.status === 'open');
+    const open = (bom.risk_layer || []).filter((r) => r.status === "open");
     openRisks += open.length;
     openCriticalHigh += open.filter(
-      (r) => r.severity === 'critical' || r.severity === 'high',
+      (r) => r.severity === "critical" || r.severity === "high",
     ).length;
     if (bom.attestation?.generator) withAttestation += 1;
   }
   const audit = mergeAuditEntries(boms);
-  const eventTypes = Array.from(new Set(audit.map((a) => a.event_type).filter(Boolean)));
+  const eventTypes = Array.from(
+    new Set(audit.map((a) => a.event_type).filter(Boolean)),
+  );
   const generatedAt = new Date().toISOString();
 
   const postureRows = boms
     .map(({ bom, source }) => {
       const sev = maxSeverity(bom);
       const score = postureScore(bom);
-      const sevClass = SEVERITY_BADGE_CLASS[sev] || 'risk-low';
-      const open = (bom.risk_layer || []).filter((r) => r.status === 'open').length;
+      const sevClass = SEVERITY_BADGE_CLASS[sev] || "risk-low";
+      const open = (bom.risk_layer || []).filter(
+        (r) => r.status === "open",
+      ).length;
       return `<tr>
-            <td>${escapeHtml(bom.identity?.agent_name || 'unnamed')}</td>
-            <td><code>${escapeHtml(bom.identity?.agent_id || 'N/A')}</code></td>
-            <td>${escapeHtml(bom.identity?.deployment_context || 'N/A')}</td>
+            <td>${escapeHtml(bom.identity?.agent_name || "unnamed")}</td>
+            <td><code>${escapeHtml(bom.identity?.agent_id || "N/A")}</code></td>
+            <td>${escapeHtml(bom.identity?.deployment_context || "N/A")}</td>
             <td>${(bom.tool_layer || []).length}</td>
-            <td><span class="badge ${sevClass}">${sev || 'none'}</span></td>
+            <td><span class="badge ${sevClass}">${sev || "none"}</span></td>
             <td>${open}</td>
             <td><strong>${score}</strong></td>
             <td><code>${escapeHtml(source)}</code></td>
           </tr>`;
     })
-    .join('');
+    .join("");
 
   const heatmapHeader = Object.values(CONTROL_LABELS)
     .map((label) => `<th>${label}</th>`)
-    .join('');
+    .join("");
 
   const heatmapRows = boms
     .map(({ bom }) => {
@@ -1206,29 +1287,29 @@ export function generateFleetDashboardHTML(boms: { bom: AgentBOM; source: string
           (c) =>
             `<td class="${HEATMAP_CELL_CLASS[c.status]}" title="${escapeHtml(c.detail)}"><span class="hm-glyph">${c.status[0].toUpperCase()}</span></td>`,
         )
-        .join('');
+        .join("");
       const score = postureScore(bom);
       return `<tr>
-            <td class="hm-agent">${escapeHtml(bom.identity?.agent_name || 'unnamed')}</td>
+            <td class="hm-agent">${escapeHtml(bom.identity?.agent_name || "unnamed")}</td>
             ${cells}
             <td class="hm-score">${score}</td>
           </tr>`;
     })
-    .join('');
+    .join("");
 
   const graphCards = boms
     .map(({ bom }) => {
-      const name = escapeHtml(bom.identity?.agent_name || 'unnamed');
+      const name = escapeHtml(bom.identity?.agent_name || "unnamed");
       return `<div class="graph-card">
             <div class="graph-title">${name}</div>
             ${renderDependencyGraphSVG(bom)}
           </div>`;
     })
-    .join('');
+    .join("");
 
   const eventTypeOptions = eventTypes
     .map((t) => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`)
-    .join('');
+    .join("");
 
   const auditBlock =
     audit.length === 0
@@ -1256,7 +1337,7 @@ export function generateFleetDashboardHTML(boms: { bom: AgentBOM; source: string
               <tbody id="audit-body">
                 ${audit
                   .map((e) => {
-                    const ts = e.timestamp || '';
+                    const ts = e.timestamp || "";
                     const ms = parseTs(ts);
                     const text = [
                       e.agent,
@@ -1266,28 +1347,28 @@ export function generateFleetDashboardHTML(boms: { bom: AgentBOM; source: string
                       e.outcome,
                       JSON.stringify(e.details || {}),
                     ]
-                      .join(' ')
+                      .join(" ")
                       .toLowerCase();
                     const outcomeClass =
-                      e.outcome === 'success'
-                        ? 'outcome-success'
-                        : e.outcome === 'failure'
-                          ? 'outcome-failure'
-                          : 'outcome-unknown';
+                      e.outcome === "success"
+                        ? "outcome-success"
+                        : e.outcome === "failure"
+                          ? "outcome-failure"
+                          : "outcome-unknown";
                     const details = e.details
                       ? `<br><code>${escapeHtml(JSON.stringify(e.details))}</code>`
-                      : '';
-                    return `<tr data-ts="${ms}" data-type="${escapeHtml(e.event_type || '')}" data-text="${escapeHtml(text)}">
+                      : "";
+                    return `<tr data-ts="${ms}" data-type="${escapeHtml(e.event_type || "")}" data-text="${escapeHtml(text)}">
                       <td>${escapeHtml(ts)}</td>
                       <td>${escapeHtml(e.agent)}</td>
-                      <td>${escapeHtml(e.event_type || '')}</td>
-                      <td>${escapeHtml(e.actor || '')}</td>
-                      <td>${escapeHtml(e.resource || '')}</td>
-                      <td><span class="outcome ${outcomeClass}">${escapeHtml(e.outcome || 'unknown')}</span></td>
+                      <td>${escapeHtml(e.event_type || "")}</td>
+                      <td>${escapeHtml(e.actor || "")}</td>
+                      <td>${escapeHtml(e.resource || "")}</td>
+                      <td><span class="outcome ${outcomeClass}">${escapeHtml(e.outcome || "unknown")}</span></td>
                       <td>${details}</td>
                     </tr>`;
                   })
-                  .join('')}
+                  .join("")}
               </tbody>
             </table>
           </div>`;
@@ -1473,56 +1554,58 @@ export function generateFleetDashboardHTML(boms: { bom: AgentBOM; source: string
 
 /** Command handler for `export-dashboard fleet <dir> --output <dir>`. */
 export function exportFleetDashboardCommand(args: string[]): number {
-  if (args.length === 0 || args[0] === '--help' || args[0] === '-h') {
+  if (args.length === 0 || args[0] === "--help" || args[0] === "-h") {
     console.log(
       [
-        'Usage: agent-trust export-dashboard fleet <dir> --output <dir>',
-        '',
-        'Generates a fleet trust analytics dashboard from every AgentBOM (*.json) in <dir>.',
-        '',
-        'Arguments:',
-        '  <dir>            Directory containing AgentBOM JSON files (one per agent)',
-        '  --output <dir>   Directory to write fleet-dashboard.html (required)',
-        '',
-        'The dashboard visualizes:',
-        '  - Trust posture across the agent fleet (per-agent overview + scores)',
-        '  - BOM dependency graphs (agent -> model / MCP servers / tools / scopes)',
-        '  - Compliance heatmap (per-agent x trust-control posture grid)',
-        '  - Audit log search with temporal (date-range), text, and event-type filters',
-      ].join('\n'),
+        "Usage: agent-trust export-dashboard fleet <dir> --output <dir>",
+        "",
+        "Generates a fleet trust analytics dashboard from every AgentBOM (*.json) in <dir>.",
+        "",
+        "Arguments:",
+        "  <dir>            Directory containing AgentBOM JSON files (one per agent)",
+        "  --output <dir>   Directory to write fleet-dashboard.html (required)",
+        "",
+        "The dashboard visualizes:",
+        "  - Trust posture across the agent fleet (per-agent overview + scores)",
+        "  - BOM dependency graphs (agent -> model / MCP servers / tools / scopes)",
+        "  - Compliance heatmap (per-agent x trust-control posture grid)",
+        "  - Audit log search with temporal (date-range), text, and event-type filters",
+      ].join("\n"),
     );
     return 0;
   }
 
-  let inputDir = '';
-  let outputDir = '';
+  let inputDir = "";
+  let outputDir = "";
   for (let i = 0; i < args.length; i++) {
-    if (args[i] === '--output' && i + 1 < args.length) {
+    if (args[i] === "--output" && i + 1 < args.length) {
       outputDir = args[i + 1];
       i++;
-    } else if (!args[i].startsWith('--')) {
+    } else if (!args[i].startsWith("--")) {
       inputDir = args[i];
     }
   }
 
   if (!inputDir) {
-    console.error('Error: Missing required argument <dir>');
+    console.error("Error: Missing required argument <dir>");
     return 1;
   }
   if (!outputDir) {
-    console.error('Error: Missing required argument --output <dir>');
+    console.error("Error: Missing required argument --output <dir>");
     return 1;
   }
 
   let entries: string[];
   try {
-    entries = readdirSync(resolve(inputDir)).filter((f) => f.endsWith('.json'));
+    entries = readdirSync(resolve(inputDir)).filter((f) => f.endsWith(".json"));
   } catch {
     console.error(`Error: cannot read fleet directory "${resolve(inputDir)}"`);
     return 1;
   }
   if (entries.length === 0) {
-    console.error(`Error: no AgentBOM (*.json) files found in "${resolve(inputDir)}"`);
+    console.error(
+      `Error: no AgentBOM (*.json) files found in "${resolve(inputDir)}"`,
+    );
     return 1;
   }
 
@@ -1531,7 +1614,7 @@ export function exportFleetDashboardCommand(args: string[]): number {
     const filePath = resolve(inputDir, f);
     let content: string;
     try {
-      content = readFileSync(filePath, 'utf-8');
+      content = readFileSync(filePath, "utf-8");
     } catch {
       console.warn(`Warning: skipping unreadable file "${f}"`);
       continue;
@@ -1553,7 +1636,7 @@ export function exportFleetDashboardCommand(args: string[]): number {
   }
 
   if (boms.length === 0) {
-    console.error('Error: no valid AgentBOM files found in fleet directory');
+    console.error("Error: no valid AgentBOM files found in fleet directory");
     return 1;
   }
 
@@ -1565,72 +1648,74 @@ export function exportFleetDashboardCommand(args: string[]): number {
   } catch {
     // Directory may already exist
   }
-  const outputFile = resolve(outputPath, 'fleet-dashboard.html');
-  writeFileSync(outputFile, html, 'utf-8');
+  const outputFile = resolve(outputPath, "fleet-dashboard.html");
+  writeFileSync(outputFile, html, "utf-8");
 
-  console.log(`✅ Fleet dashboard generated: ${outputFile} (${boms.length} agents)`);
+  console.log(
+    `✅ Fleet dashboard generated: ${outputFile} (${boms.length} agents)`,
+  );
   return 0;
 }
 
 /** Command handler for export-dashboard */
 export function exportDashboardCommand(args: string[]): number {
-  if (args[0] === 'fleet') {
+  if (args[0] === "fleet") {
     return exportFleetDashboardCommand(args.slice(1));
   }
-  if (args.length === 0 || args[0] === '--help' || args[0] === '-h') {
+  if (args.length === 0 || args[0] === "--help" || args[0] === "-h") {
     console.log(
       [
-        'Usage: agent-trust export-dashboard <bom.json> --output <dir>',
-        '',
-        'Generates a static HTML dashboard from an AgentBOM file.',
-        '',
-        'Arguments:',
-        '  <bom.json>  Path to the AgentBOM JSON file',
-        '  --output <dir>  Directory to write the HTML dashboard (required)',
-        '',
-        'The dashboard includes:',
-        '  - Agent identity and model information',
-        '  - Tool inventory with permissions and risk signals',
-        '  - Risk assessment with severity breakdown',
-        '  - Permissions and access overview',
-        '  - Evidence and attestation data',
-        '  - Audit log entries (if available)',
-      ].join('\n'),
+        "Usage: agent-trust export-dashboard <bom.json> --output <dir>",
+        "",
+        "Generates a static HTML dashboard from an AgentBOM file.",
+        "",
+        "Arguments:",
+        "  <bom.json>  Path to the AgentBOM JSON file",
+        "  --output <dir>  Directory to write the HTML dashboard (required)",
+        "",
+        "The dashboard includes:",
+        "  - Agent identity and model information",
+        "  - Tool inventory with permissions and risk signals",
+        "  - Risk assessment with severity breakdown",
+        "  - Permissions and access overview",
+        "  - Evidence and attestation data",
+        "  - Audit log entries (if available)",
+      ].join("\n"),
     );
     return 0;
   }
 
-  let bomPath = '';
-  let outputDir = '';
+  let bomPath = "";
+  let outputDir = "";
 
   // Parse arguments
   for (let i = 0; i < args.length; i++) {
-    if (args[i] === '--output' && i + 1 < args.length) {
+    if (args[i] === "--output" && i + 1 < args.length) {
       outputDir = args[i + 1];
       i++;
-    } else if (!args[i].startsWith('--')) {
+    } else if (!args[i].startsWith("--")) {
       bomPath = args[i];
     }
   }
 
   if (!bomPath) {
-    console.error('Error: Missing required argument <bom.json>');
+    console.error("Error: Missing required argument <bom.json>");
     return 1;
   }
 
   if (!outputDir) {
-    console.error('Error: Missing required argument --output <dir>');
+    console.error("Error: Missing required argument --output <dir>");
     return 1;
   }
 
   try {
-    const content = readFileSync(resolve(bomPath), 'utf-8');
+    const content = readFileSync(resolve(bomPath), "utf-8");
     const data = JSON.parse(content) as AgentBOM;
 
     // Validate the AgentBOM
     const validation = validateAgentBOM(data);
     if (!validation.valid) {
-      console.error('Error: Invalid AgentBOM file:');
+      console.error("Error: Invalid AgentBOM file:");
       for (const error of validation.errors) {
         console.error(`  ${error}`);
       }
@@ -1649,8 +1734,8 @@ export function exportDashboardCommand(args: string[]): number {
     }
 
     // Write HTML file
-    const outputFile = resolve(outputPath, 'dashboard.html');
-    writeFileSync(outputFile, html, 'utf-8');
+    const outputFile = resolve(outputPath, "dashboard.html");
+    writeFileSync(outputFile, html, "utf-8");
 
     console.log(`✅ Dashboard generated successfully: ${outputFile}`);
     return 0;
