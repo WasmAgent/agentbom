@@ -1,6 +1,6 @@
 {
   "name": "@wasmagent/agentbom-core",
-  "version": "0.3.4",
+  "version": "0.4.0",
   "description": "AgentBOM validator, compliance checker, and version migrator",
   "type": "module",
   "main": "./dist/index.js",

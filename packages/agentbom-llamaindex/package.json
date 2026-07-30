@@ -1,6 +1,6 @@
 {
   "name": "@wasmagent/agentbom-llamaindex",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "description": "AgentBOM LlamaIndex adapter",
   "type": "module",
   "main": "./dist/index.js",
