@@ -14,14 +14,15 @@
  * the filesystem nor hashing.
  */
 
-import { createHash } from 'node:crypto';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { createHash } from "node:crypto";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
 
 // ---- Types ----
 
 /** Schema version identifier for marketplace trust packages. */
-export const MARKETPLACE_PACKAGE_SCHEMA = 'marketplace-trust-package/v1' as const;
+export const MARKETPLACE_PACKAGE_SCHEMA =
+  "marketplace-trust-package/v1" as const;
 
 /** A trust attestation referenced by a marketplace package. */
 export interface TrustAttestation {
@@ -43,7 +44,7 @@ export interface ComplianceSummary {
 
 /** A marketplace trust package derived from an AgentBOM. */
 export interface MarketplacePackage {
-  schema: 'marketplace-trust-package/v1';
+  schema: "marketplace-trust-package/v1";
   /** ISO-8601 timestamp of package generation. */
   generated_at: string;
   agent_id: string;
@@ -69,8 +70,8 @@ export interface MarketplacePackage {
  * value is absent or not a usable string. Keeps field extraction resilient to
  * malformed BOM input.
  */
-function asString(value: unknown, fallback = 'unknown'): string {
-  return typeof value === 'string' && value.length > 0 ? value : fallback;
+function asString(value: unknown, fallback = "unknown"): string {
+  return typeof value === "string" && value.length > 0 ? value : fallback;
 }
 
 /**
@@ -79,7 +80,7 @@ function asString(value: unknown, fallback = 'unknown'): string {
  */
 function asStringArray(value: unknown, fallback: string[] = []): string[] {
   if (!Array.isArray(value)) return fallback;
-  return value.filter((entry): entry is string => typeof entry === 'string');
+  return value.filter((entry): entry is string => typeof entry === "string");
 }
 
 /**
@@ -87,7 +88,7 @@ function asStringArray(value: unknown, fallback: string[] = []): string[] {
  * Returns `undefined` when the value is absent, an array, or not an object.
  */
 function asRecord(value: unknown): Record<string, unknown> | undefined {
-  if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+  if (typeof value === "object" && value !== null && !Array.isArray(value)) {
     return value as Record<string, unknown>;
   }
   return undefined;
@@ -95,7 +96,7 @@ function asRecord(value: unknown): Record<string, unknown> | undefined {
 
 /** One-liner shown to operators describing how to verify the package. */
 const VERIFICATION_INSTRUCTIONS =
-  'Run: trust-cli compliance-check <bom> --profile default to verify';
+  "Run: trust-cli compliance-check <bom> --profile default to verify";
 
 /**
  * Extract agent identity fields from a BOM.
@@ -128,7 +129,9 @@ function extractCapabilities(bom: Record<string, unknown>): string[] {
   const capabilitiesObject = asRecord(bom.capabilities);
   const modelLayer = asRecord(bom.model_layer);
   return asStringArray(
-    capabilitiesObject?.declared ?? modelLayer?.capabilities ?? bom.capabilities,
+    capabilitiesObject?.declared ??
+      modelLayer?.capabilities ??
+      bom.capabilities,
   );
 }
 
@@ -138,11 +141,15 @@ function extractCapabilities(bom: Record<string, unknown>): string[] {
  * Framework IDs are read from each entry of `bom.compliance_mappings[].framework_id`.
  * Pass/total check counts are not carried by the source BOM and default to `0`.
  */
-function extractComplianceSummary(bom: Record<string, unknown>): ComplianceSummary {
-  const mappings = Array.isArray(bom.compliance_mappings) ? bom.compliance_mappings : [];
+function extractComplianceSummary(
+  bom: Record<string, unknown>,
+): ComplianceSummary {
+  const mappings = Array.isArray(bom.compliance_mappings)
+    ? bom.compliance_mappings
+    : [];
   const frameworks: string[] = [];
   for (const entry of mappings) {
-    const frameworkId = asString(asRecord(entry)?.framework_id, '');
+    const frameworkId = asString(asRecord(entry)?.framework_id, "");
     if (frameworkId) frameworks.push(frameworkId);
   }
   return { frameworks, passed_checks: 0, total_checks: 0 };
@@ -192,60 +199,60 @@ export function buildMarketplacePackage(
  * and writes `marketplace-package.json` to the requested output directory.
  */
 export function exportMarketplaceCommand(args: string[]): number {
-  if (args.length === 0 || args[0] === '--help' || args[0] === '-h') {
+  if (args.length === 0 || args[0] === "--help" || args[0] === "-h") {
     console.log(
       [
-        'Usage: agent-trust export-marketplace <bom.json> --output <dir>',
-        '',
-        'Generates a standardized marketplace trust package from an AgentBOM file.',
-        '',
-        'Arguments:',
-        '  <bom.json>      Path to the AgentBOM JSON file',
-        '  --output <dir>  Directory to write the package (required)',
-        '',
-        'Output:',
-        '  <dir>/marketplace-package.json  — the generated trust package',
-        '',
-        'The package contains agent identity, capabilities, compliance summary,',
-        'and trust attestations in the marketplace-trust-package/v1 schema.',
-      ].join('\n'),
+        "Usage: agent-trust export-marketplace <bom.json> --output <dir>",
+        "",
+        "Generates a standardized marketplace trust package from an AgentBOM file.",
+        "",
+        "Arguments:",
+        "  <bom.json>      Path to the AgentBOM JSON file",
+        "  --output <dir>  Directory to write the package (required)",
+        "",
+        "Output:",
+        "  <dir>/marketplace-package.json  — the generated trust package",
+        "",
+        "The package contains agent identity, capabilities, compliance summary,",
+        "and trust attestations in the marketplace-trust-package/v1 schema.",
+      ].join("\n"),
     );
     return 0;
   }
 
-  let bomPath = '';
-  let outputDir = '';
+  let bomPath = "";
+  let outputDir = "";
 
   for (let i = 0; i < args.length; i++) {
-    if (args[i] === '--output' && i + 1 < args.length) {
+    if (args[i] === "--output" && i + 1 < args.length) {
       outputDir = args[++i];
-    } else if (!args[i].startsWith('--')) {
+    } else if (!args[i].startsWith("--")) {
       bomPath = args[i];
     }
   }
 
   if (!bomPath) {
-    console.error('Error: Missing required argument <bom.json>');
+    console.error("Error: Missing required argument <bom.json>");
     return 1;
   }
   if (!outputDir) {
-    console.error('Error: Missing required argument --output <dir>');
+    console.error("Error: Missing required argument --output <dir>");
     return 1;
   }
 
   try {
-    const content = readFileSync(resolve(bomPath), 'utf-8');
+    const content = readFileSync(resolve(bomPath), "utf-8");
     const bom = JSON.parse(content) as Record<string, unknown>;
-    const casId = `sha256:${createHash('sha256').update(content, 'utf-8').digest('hex')}`;
+    const casId = `sha256:${createHash("sha256").update(content, "utf-8").digest("hex")}`;
     const pkg = buildMarketplacePackage(bom, casId);
 
     mkdirSync(resolve(outputDir), { recursive: true });
-    const outPath = resolve(outputDir, 'marketplace-package.json');
+    const outPath = resolve(outputDir, "marketplace-package.json");
     writeFileSync(
       outPath,
       `${JSON.stringify(pkg, null, 2)}
 `,
-      'utf-8',
+      "utf-8",
     );
     console.log(`Marketplace package written to ${outPath}`);
     return 0;

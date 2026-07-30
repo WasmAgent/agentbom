@@ -162,4 +162,121 @@ describe("autogen-agentbom generateAgentBOM", () => {
     expect(result.valid).toBe(true);
     expect(result.errors).toHaveLength(0);
   });
+
+  it("maps workflow definitions to workflow_layer", () => {
+    const bom = generateAgentBOM({
+      agent_id: "ag-agent-006",
+      agent_name: "Workflow Agent",
+      workflows: [
+        {
+          workflow_id: "wf-001",
+          workflow_name: "Search and Summarize",
+          description: "Search the web and summarize results",
+          version: "1.0.0",
+          steps: [
+            {
+              step_id: "step-search",
+              action: "web_search",
+              description: "Execute web search",
+              allowed_tools: ["web-search"],
+            },
+            {
+              step_id: "step-summarize",
+              action: "summarize",
+              description: "Summarize results",
+              depends_on: ["step-search"],
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(bom.workflow_layer).toBeDefined();
+    expect(bom.workflow_layer).toHaveLength(1);
+    expect(bom.workflow_layer?.[0].workflow_id).toBe("wf-001");
+    expect(bom.workflow_layer?.[0].workflow_name).toBe("Search and Summarize");
+    expect(bom.workflow_layer?.[0].description).toBe(
+      "Search the web and summarize results",
+    );
+    expect(bom.workflow_layer?.[0].version).toBe("1.0.0");
+    expect(bom.workflow_layer?.[0].steps).toHaveLength(2);
+    expect(bom.workflow_layer?.[0].steps[0].step_id).toBe("step-search");
+    expect(bom.workflow_layer?.[0].steps[1].depends_on).toEqual([
+      "step-search",
+    ]);
+
+    const result = validateAgentBOM(bom);
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+  });
+
+  it("omits workflow_layer when no workflows provided", () => {
+    const bom = generateAgentBOM({
+      agent_id: "ag-agent-007",
+      agent_name: "No Workflow Agent",
+    });
+    expect(bom.workflow_layer).toBeUndefined();
+
+    const result = validateAgentBOM(bom);
+    expect(result.valid).toBe(true);
+  });
+
+  it("maps multiple workflows for multi-agent AutoGen usage", () => {
+    const bom = generateAgentBOM({
+      agent_id: "ag-multiagent-001",
+      agent_name: "AutoGen Group Chat Orchestrator",
+      agent_version: "0.4.0",
+      deployment_context: "production",
+      tools: [
+        {
+          name: "code_executor",
+          permissions: ["process:exec", "fs:write"],
+          risk_signals: ["code_execution"],
+        },
+        {
+          name: "web_browser",
+          permissions: ["network:outbound"],
+        },
+      ],
+      workflows: [
+        {
+          workflow_id: "wf-code-review",
+          workflow_name: "Code Review Pipeline",
+          steps: [
+            { step_id: "write", action: "code_executor" },
+            { step_id: "test", action: "code_executor", depends_on: ["write"] },
+            {
+              step_id: "review",
+              action: "decision",
+              depends_on: ["test"],
+              allowed_tools: [],
+            },
+          ],
+        },
+        {
+          workflow_id: "wf-research",
+          workflow_name: "Research Pipeline",
+          steps: [
+            {
+              step_id: "search",
+              action: "web_browser",
+              allowed_tools: ["web-browser"],
+            },
+            {
+              step_id: "summarize",
+              action: "decision",
+              depends_on: ["search"],
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(bom.workflow_layer).toHaveLength(2);
+    expect(bom.tool_layer).toHaveLength(2);
+
+    const result = validateAgentBOM(bom);
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+  });
 });

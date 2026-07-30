@@ -1,5 +1,8 @@
-import { resolve } from 'node:path';
-import { type PipelineConfig, runPipeline } from '@wasmagent/agentbom-core/pipeline';
+import { resolve } from "node:path";
+import {
+  type PipelineConfig,
+  runPipeline,
+} from "@wasmagent/agentbom-core/pipeline";
 
 /**
  * `agentbom pipeline <path> [--partitions N] [--no-incremental]`
@@ -10,8 +13,10 @@ import { type PipelineConfig, runPipeline } from '@wasmagent/agentbom-core/pipel
  */
 export async function agentbomPipelineCommand(args: string[]): Promise<number> {
   if (args.length < 1) {
-    console.error('Error: agentbom pipeline requires a <path> argument');
-    console.error('Usage: agentbom pipeline <path> [--partitions N] [--no-incremental]');
+    console.error("Error: agentbom pipeline requires a <path> argument");
+    console.error(
+      "Usage: agentbom pipeline <path> [--partitions N] [--no-incremental]",
+    );
     return 1;
   }
 
@@ -22,15 +27,17 @@ export async function agentbomPipelineCommand(args: string[]): Promise<number> {
   let i = 1;
   while (i < args.length) {
     const flag = args[i];
-    if (flag === '--partitions' && args[i + 1] !== undefined) {
+    if (flag === "--partitions" && args[i + 1] !== undefined) {
       const n = Number.parseInt(args[i + 1], 10);
       if (Number.isNaN(n) || n < 1) {
-        console.error(`Error: --partitions must be a positive integer, got "${args[i + 1]}"`);
+        console.error(
+          `Error: --partitions must be a positive integer, got "${args[i + 1]}"`,
+        );
         return 1;
       }
       config.partitionCount = n;
       i += 2;
-    } else if (flag === '--no-incremental') {
+    } else if (flag === "--no-incremental") {
       config.emitIncremental = false;
       i += 1;
     } else {
@@ -40,8 +47,8 @@ export async function agentbomPipelineCommand(args: string[]): Promise<number> {
   }
 
   const partLabel = config.partitionCount
-    ? ` (${config.partitionCount} partition${config.partitionCount > 1 ? 's' : ''})`
-    : '';
+    ? ` (${config.partitionCount} partition${config.partitionCount > 1 ? "s" : ""})`
+    : "";
   console.log(`Processing BOM artifacts from: ${filePath}${partLabel}`);
 
   const wallStart = Date.now();
@@ -50,7 +57,7 @@ export async function agentbomPipelineCommand(args: string[]): Promise<number> {
 
   // Per-artifact results
   for (const result of results) {
-    const status = result.valid ? '✓' : '✗';
+    const status = result.valid ? "✓" : "✗";
     console.log(
       `  ${status} ${result.artifactId} — ${result.durationMs.toFixed(1)}ms — ${result.sizeBytes} bytes`,
     );
@@ -59,22 +66,26 @@ export async function agentbomPipelineCommand(args: string[]): Promise<number> {
         console.log(`      ${err}`);
       }
       if (result.validation.errors.length > 5) {
-        console.log(`      ... and ${result.validation.errors.length - 5} more errors`);
+        console.log(
+          `      ... and ${result.validation.errors.length - 5} more errors`,
+        );
       }
     }
   }
 
   // Summary
   console.log();
-  console.log('Pipeline summary:');
+  console.log("Pipeline summary:");
   console.log(`  Artifacts: ${metrics.totalProcessed}`);
   console.log(`  Errors:     ${metrics.totalErrors}`);
   console.log(`  Bytes:      ${metrics.totalBytesProcessed}`);
-  console.log(`  Duration:   ${metrics.durationMs.toFixed(1)}ms (wall: ${wallMs}ms)`);
+  console.log(
+    `  Duration:   ${metrics.durationMs.toFixed(1)}ms (wall: ${wallMs}ms)`,
+  );
   console.log(`  Peak heap:  ${metrics.peakMemoryBytes} bytes`);
 
   if (config.partitionCount && config.partitionCount > 1) {
-    console.log('  Partition counts:');
+    console.log("  Partition counts:");
     for (const [p, count] of metrics.partitionCounts) {
       console.log(`    Partition ${p}: ${count}`);
     }

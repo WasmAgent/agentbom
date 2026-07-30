@@ -19,14 +19,14 @@
  * Usage:
  *   trust-cli pull <artifact-id> [--registry <dir>] [--output <path>] [--with-deps] [--help]
  */
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
 import {
   type ArtifactType,
   computeCasId,
   detectArtifactType,
   readRegistryManifest,
-} from './trust-publish.js';
+} from "./trust-publish.js";
 
 // ---- Types ----
 
@@ -67,7 +67,7 @@ export interface PullResult {
   /** Resolved CAS identifier (sha256:hex). */
   casId: string;
   /** How the artifact id was resolved. */
-  resolvedVia: 'cas-id' | 'tag';
+  resolvedVia: "cas-id" | "tag";
   /** Tag label used to resolve, if any. */
   viaTag?: string;
   /** Artifact type detected during validation. */
@@ -99,10 +99,10 @@ export interface PullResult {
  * sharded into `<hex[0:2]>/<hex[2:4]>/<full-hex>.json` under `objects/`.
  */
 export function objectPathForCasId(casId: string, registryDir: string): string {
-  const hexDigest = casId.replace(/^sha256:/, '');
+  const hexDigest = casId.replace(/^sha256:/, "");
   return resolve(
     registryDir,
-    'objects',
+    "objects",
     hexDigest.slice(0, 2),
     hexDigest.slice(2, 4),
     `${hexDigest}.json`,
@@ -121,16 +121,19 @@ export function isCasId(artifactId: string): boolean {
  *
  * Returns the CAS id, or `null` if the tag is unknown or its pointer is malformed.
  */
-export function resolveTagToCasId(registryDir: string, tag: string): string | null {
-  const tagPath = resolve(registryDir, 'tags', `${tag}.json`);
+export function resolveTagToCasId(
+  registryDir: string,
+  tag: string,
+): string | null {
+  const tagPath = resolve(registryDir, "tags", `${tag}.json`);
   if (!existsSync(tagPath)) return null;
   try {
-    const data = JSON.parse(readFileSync(tagPath, 'utf-8'));
+    const data = JSON.parse(readFileSync(tagPath, "utf-8"));
     if (
-      typeof data === 'object' &&
+      typeof data === "object" &&
       data !== null &&
       !Array.isArray(data) &&
-      typeof data.cas_id === 'string' &&
+      typeof data.cas_id === "string" &&
       isCasId(data.cas_id)
     ) {
       return data.cas_id;
@@ -188,7 +191,7 @@ export function extractDependencyIds(data: Record<string, unknown>): string[] {
   const seen = new Set<string>();
 
   const push = (id: unknown): void => {
-    if (typeof id === 'string' && id.length > 0 && !seen.has(id)) {
+    if (typeof id === "string" && id.length > 0 && !seen.has(id)) {
       seen.add(id);
       ids.push(id);
     }
@@ -201,9 +204,9 @@ export function extractDependencyIds(data: Record<string, unknown>): string[] {
 
   if (Array.isArray(data.dependencies)) {
     for (const dep of data.dependencies) {
-      if (typeof dep === 'string') {
+      if (typeof dep === "string") {
         push(dep);
-      } else if (dep && typeof dep === 'object' && !Array.isArray(dep)) {
+      } else if (dep && typeof dep === "object" && !Array.isArray(dep)) {
         const id = (dep as Record<string, unknown>).id;
         push(id);
       }
@@ -230,38 +233,56 @@ function resolveSingleDependency(
 
   const resolved = resolveArtifactId(depId, registryDir);
   if (!resolved) {
-    return { ...base, error: 'artifact id not found in registry (not a CAS id or known tag)' };
+    return {
+      ...base,
+      error: "artifact id not found in registry (not a CAS id or known tag)",
+    };
   }
 
   const casId = resolved.casId;
   if (visited.has(casId)) {
-    return { ...base, resolved: true, casId, error: 'cycle — already resolved' };
+    return {
+      ...base,
+      resolved: true,
+      casId,
+      error: "cycle — already resolved",
+    };
   }
   visited.add(casId);
 
   const objectPath = objectPathForCasId(casId, registryDir);
   if (!existsSync(objectPath)) {
-    return { ...base, resolved: false, casId, error: 'object not present in registry' };
+    return {
+      ...base,
+      resolved: false,
+      casId,
+      error: "object not present in registry",
+    };
   }
 
   let raw: string;
   try {
-    raw = readFileSync(objectPath, 'utf-8');
+    raw = readFileSync(objectPath, "utf-8");
   } catch {
-    return { ...base, resolved: false, casId, error: 'cannot read object file' };
+    return {
+      ...base,
+      resolved: false,
+      casId,
+      error: "cannot read object file",
+    };
   }
 
   const { ok, computedCasId } = verifyIntegrity(raw, casId);
   let parsed: Record<string, unknown>;
   try {
     const data = JSON.parse(raw);
-    if (typeof data !== 'object' || data === null || Array.isArray(data)) {
+    if (typeof data !== "object" || data === null || Array.isArray(data)) {
       return {
         ...base,
         resolved: true,
         casId,
         integrityVerified: false,
-        error: 'object is not a JSON object',
+        error: "object is not a JSON object",
       };
     }
     parsed = data as Record<string, unknown>;
@@ -271,7 +292,7 @@ function resolveSingleDependency(
       resolved: true,
       casId,
       integrityVerified: false,
-      error: 'object is not valid JSON',
+      error: "object is not valid JSON",
     };
   }
 
@@ -308,7 +329,9 @@ export function resolveDependencies(
   recurse: boolean,
 ): ResolvedDependency[] {
   const visited = new Set<string>();
-  return dependencyIds.map((id) => resolveSingleDependency(id, registryDir, visited, recurse));
+  return dependencyIds.map((id) =>
+    resolveSingleDependency(id, registryDir, visited, recurse),
+  );
 }
 
 /**
@@ -346,7 +369,7 @@ export function pullArtifact(
 
   let raw: string;
   try {
-    raw = readFileSync(objectPath, 'utf-8');
+    raw = readFileSync(objectPath, "utf-8");
   } catch {
     return `Error: cannot read artifact at "${objectPath}"`;
   }
@@ -357,7 +380,7 @@ export function pullArtifact(
   } catch {
     return `Error: artifact at "${objectPath}" is not valid JSON`;
   }
-  if (typeof data !== 'object' || data === null || Array.isArray(data)) {
+  if (typeof data !== "object" || data === null || Array.isArray(data)) {
     return `Error: artifact at "${objectPath}" is not a JSON object`;
   }
   const artifact = data as Record<string, unknown>;
@@ -368,14 +391,14 @@ export function pullArtifact(
 
   let sizeBytes = 0;
   try {
-    sizeBytes = Buffer.byteLength(raw, 'utf-8');
+    sizeBytes = Buffer.byteLength(raw, "utf-8");
   } catch {
     sizeBytes = raw.length;
   }
 
   const result: PullResult = {
     casId,
-    resolvedVia: resolved.viaTag ? 'tag' : 'cas-id',
+    resolvedVia: resolved.viaTag ? "tag" : "cas-id",
     viaTag: resolved.viaTag,
     artifactType: detectArtifactType(artifact),
     version: manifest[casId],
@@ -384,7 +407,9 @@ export function pullArtifact(
     computedCasId,
     registryPath: objectPath,
     dependencyIds,
-    resolvedDependencies: withDeps ? resolveDependencies(dependencyIds, registryDir, true) : [],
+    resolvedDependencies: withDeps
+      ? resolveDependencies(dependencyIds, registryDir, true)
+      : [],
     artifact,
   };
 
@@ -394,39 +419,39 @@ export function pullArtifact(
 // ---- CLI command ----
 
 const PULL_USAGE = [
-  'Usage: agent-trust pull <artifact-id> [options]',
-  '',
-  'Retrieve a trust artifact from the local distribution registry by CAS',
-  'identifier, with integrity verification and dependency resolution.',
-  '',
-  'Arguments:',
-  '  <artifact-id>     CAS identifier (sha256:<hex>) or a tag label (e.g. latest)',
-  '',
-  'Options:',
-  '  --registry <dir>  Path to the local registry directory',
-  '                     (default: ~/.trust-registry)',
-  '  --output <path>   Write the retrieved artifact JSON to this file',
-  '  --with-deps       Recursively resolve and verify declared dependencies',
-  '  --help, -h        Show this help message',
-  '',
-  'Examples:',
-  '  agent-trust pull sha256:abc123...',
-  '  agent-trust pull latest',
-  '  agent-trust pull latest --registry ./my-registry --output agentbom.json',
-  '  agent-trust pull sha256:abc123... --with-deps',
-  '',
-  'Output:',
-  '  On success, prints a JSON object with the resolved CAS id, artifact type,',
-  '  version, integrity status, and declared dependencies. Exits non-zero if',
-  '  the artifact is missing or its stored content fails integrity verification.',
-].join('\n');
+  "Usage: agent-trust pull <artifact-id> [options]",
+  "",
+  "Retrieve a trust artifact from the local distribution registry by CAS",
+  "identifier, with integrity verification and dependency resolution.",
+  "",
+  "Arguments:",
+  "  <artifact-id>     CAS identifier (sha256:<hex>) or a tag label (e.g. latest)",
+  "",
+  "Options:",
+  "  --registry <dir>  Path to the local registry directory",
+  "                     (default: ~/.trust-registry)",
+  "  --output <path>   Write the retrieved artifact JSON to this file",
+  "  --with-deps       Recursively resolve and verify declared dependencies",
+  "  --help, -h        Show this help message",
+  "",
+  "Examples:",
+  "  agent-trust pull sha256:abc123...",
+  "  agent-trust pull latest",
+  "  agent-trust pull latest --registry ./my-registry --output agentbom.json",
+  "  agent-trust pull sha256:abc123... --with-deps",
+  "",
+  "Output:",
+  "  On success, prints a JSON object with the resolved CAS id, artifact type,",
+  "  version, integrity status, and declared dependencies. Exits non-zero if",
+  "  the artifact is missing or its stored content fails integrity verification.",
+].join("\n");
 
 /**
  * Parse pull command arguments into a {@link PullConfig}.
  * Returns the config on success, or a usage/error string on failure.
  */
 export function parsePullArgs(args: string[]): PullConfig | string {
-  if (args.length === 0 || args[0] === '--help' || args[0] === '-h') {
+  if (args.length === 0 || args[0] === "--help" || args[0] === "-h") {
     return PULL_USAGE;
   }
 
@@ -439,13 +464,13 @@ export function parsePullArgs(args: string[]): PullConfig | string {
     const arg = args[i];
     const next = args[i + 1];
 
-    if (arg === '--registry' && next) {
+    if (arg === "--registry" && next) {
       registryDir = next;
       i++;
-    } else if (arg === '--output' && next) {
+    } else if (arg === "--output" && next) {
       outputPath = next;
       i++;
-    } else if (arg === '--with-deps') {
+    } else if (arg === "--with-deps") {
       withDeps = true;
     } else {
       return `Error: unknown argument "${arg}"`;
@@ -453,8 +478,8 @@ export function parsePullArgs(args: string[]): PullConfig | string {
   }
 
   const homeRegistry = resolve(
-    process.env.HOME ?? process.env.USERPROFILE ?? '~',
-    '.trust-registry',
+    process.env.HOME ?? process.env.USERPROFILE ?? "~",
+    ".trust-registry",
   );
 
   return {
@@ -472,8 +497,8 @@ export function parsePullArgs(args: string[]): PullConfig | string {
  */
 export function pullCommand(args: string[]): number {
   const parsed = parsePullArgs(args);
-  if (typeof parsed === 'string') {
-    if (parsed.startsWith('Usage:')) {
+  if (typeof parsed === "string") {
+    if (parsed.startsWith("Usage:")) {
       console.log(parsed);
       return 0;
     }
@@ -483,8 +508,12 @@ export function pullCommand(args: string[]): number {
 
   const config = parsed;
 
-  const result = pullArtifact(config.artifactId, config.registryDir, config.withDeps);
-  if (typeof result === 'string') {
+  const result = pullArtifact(
+    config.artifactId,
+    config.registryDir,
+    config.withDeps,
+  );
+  if (typeof result === "string") {
     console.error(result);
     return 1;
   }
@@ -500,7 +529,11 @@ export function pullCommand(args: string[]): number {
   // Persist the artifact if an output path was requested.
   if (config.outputPath) {
     try {
-      writeFileSync(config.outputPath, JSON.stringify(result.artifact, null, 2), 'utf-8');
+      writeFileSync(
+        config.outputPath,
+        JSON.stringify(result.artifact, null, 2),
+        "utf-8",
+      );
     } catch {
       console.error(`Error: cannot write artifact to "${config.outputPath}"`);
       return 1;

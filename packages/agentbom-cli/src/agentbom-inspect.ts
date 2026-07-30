@@ -1,13 +1,13 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-import { inspectAgentBOM, validateAgentBOM } from '@wasmagent/agentbom-core';
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { inspectAgentBOM, validateAgentBOM } from "@wasmagent/agentbom-core";
 
 export function inspectAgentBOMCommand(filePath: string): number {
   const resolvedPath = resolve(filePath);
 
   let raw: string;
   try {
-    raw = readFileSync(resolvedPath, 'utf-8');
+    raw = readFileSync(resolvedPath, "utf-8");
   } catch {
     console.error(`Error: cannot read file "${resolvedPath}"`);
     return 1;

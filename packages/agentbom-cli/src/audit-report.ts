@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { resolve } from 'node:path';
-import { validateAgentBOM } from '@wasmagent/agentbom-core';
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { resolve } from "node:path";
+import { validateAgentBOM } from "@wasmagent/agentbom-core";
 
 /** Audit log entry structure */
 interface AuditLogEntry {
@@ -9,7 +9,7 @@ interface AuditLogEntry {
   event_type: string;
   actor: string;
   resource?: string;
-  outcome?: 'success' | 'failure' | 'partial';
+  outcome?: "success" | "failure" | "partial";
   details?: Record<string, unknown>;
 }
 
@@ -87,18 +87,22 @@ export function generateAuditReport(bom: AgentBOM): string {
   const lines: string[] = [];
 
   // Header
-  lines.push('════════════════════════════════════════════════════════════════════════════════');
-  lines.push('                              AGENT TRUST AUDIT REPORT');
-  lines.push('════════════════════════════════════════════════════════════════════════════════');
+  lines.push(
+    "════════════════════════════════════════════════════════════════════════════════",
+  );
+  lines.push("                              AGENT TRUST AUDIT REPORT");
+  lines.push(
+    "════════════════════════════════════════════════════════════════════════════════",
+  );
 
   // Agent Identity
   const identity = bom.identity;
   if (identity) {
-    lines.push('');
-    lines.push('Agent Identity:');
-    lines.push(`  Agent ID:     ${identity.agent_id ?? 'unknown'}`);
-    lines.push(`  Agent Name:   ${identity.agent_name ?? 'unknown'}`);
-    lines.push(`  Generated At: ${identity.generated_at ?? 'unknown'}`);
+    lines.push("");
+    lines.push("Agent Identity:");
+    lines.push(`  Agent ID:     ${identity.agent_id ?? "unknown"}`);
+    lines.push(`  Agent Name:   ${identity.agent_name ?? "unknown"}`);
+    lines.push(`  Generated At: ${identity.generated_at ?? "unknown"}`);
   }
 
   // Audit Summary Statistics
@@ -106,13 +110,13 @@ export function generateAuditReport(bom: AgentBOM): string {
   const evidenceLayer = bom.evidence_layer;
   const riskLayer = bom.risk_layer ?? [];
 
-  lines.push('');
+  lines.push("");
   lines.push(
-    '────────────────────────────────────────────────────────────────────────────────────',
+    "────────────────────────────────────────────────────────────────────────────────────",
   );
-  lines.push('                              AUDIT SUMMARY');
+  lines.push("                              AUDIT SUMMARY");
   lines.push(
-    '────────────────────────────────────────────────────────────────────────────────────',
+    "────────────────────────────────────────────────────────────────────────────────────",
   );
 
   // Event statistics by outcome
@@ -125,9 +129,9 @@ export function generateAuditReport(bom: AgentBOM): string {
 
   for (const log of auditLogs) {
     const outcome = log.outcome;
-    if (outcome === 'success') outcomeStats.success++;
-    else if (outcome === 'failure') outcomeStats.failure++;
-    else if (outcome === 'partial') outcomeStats.partial++;
+    if (outcome === "success") outcomeStats.success++;
+    else if (outcome === "failure") outcomeStats.failure++;
+    else if (outcome === "partial") outcomeStats.partial++;
     else outcomeStats.unknown++;
   }
 
@@ -135,14 +139,20 @@ export function generateAuditReport(bom: AgentBOM): string {
   lines.push(`  Successful Events:        ${outcomeStats.success}`);
   lines.push(`  Failed Events:            ${outcomeStats.failure}`);
   lines.push(`  Partial Success Events:   ${outcomeStats.partial}`);
-  lines.push(`  Evidence Hashes:          ${evidenceLayer?.evidence_hashes?.length ?? 0}`);
-  lines.push(`  AEP References:           ${evidenceLayer?.aep_references?.length ?? 0}`);
-  lines.push(`  Open Risk Findings:       ${riskLayer.filter((r) => r.status === 'open').length}`);
+  lines.push(
+    `  Evidence Hashes:          ${evidenceLayer?.evidence_hashes?.length ?? 0}`,
+  );
+  lines.push(
+    `  AEP References:           ${evidenceLayer?.aep_references?.length ?? 0}`,
+  );
+  lines.push(
+    `  Open Risk Findings:       ${riskLayer.filter((r) => r.status === "open").length}`,
+  );
 
   // Risk Summary
   if (riskLayer.length > 0) {
-    lines.push('');
-    lines.push('Risk Summary:');
+    lines.push("");
+    lines.push("Risk Summary:");
     const riskBySeverity = {
       critical: 0,
       high: 0,
@@ -152,7 +162,8 @@ export function generateAuditReport(bom: AgentBOM): string {
     };
 
     for (const risk of riskLayer) {
-      const severity = risk.severity.toLowerCase() as keyof typeof riskBySeverity;
+      const severity =
+        risk.severity.toLowerCase() as keyof typeof riskBySeverity;
       if (severity in riskBySeverity) {
         riskBySeverity[severity]++;
       }
@@ -167,56 +178,64 @@ export function generateAuditReport(bom: AgentBOM): string {
 
   // Evidence Citations
   if (evidenceLayer) {
-    lines.push('');
+    lines.push("");
     lines.push(
-      '────────────────────────────────────────────────────────────────────────────────────',
+      "────────────────────────────────────────────────────────────────────────────────────",
     );
-    lines.push('                              EVIDENCE CITATIONS');
+    lines.push("                              EVIDENCE CITATIONS");
     lines.push(
-      '────────────────────────────────────────────────────────────────────────────────────',
+      "────────────────────────────────────────────────────────────────────────────────────",
     );
 
-    if (evidenceLayer.evidence_hashes && evidenceLayer.evidence_hashes.length > 0) {
-      lines.push('');
-      lines.push('Evidence Hashes:');
+    if (
+      evidenceLayer.evidence_hashes &&
+      evidenceLayer.evidence_hashes.length > 0
+    ) {
+      lines.push("");
+      lines.push("Evidence Hashes:");
       for (const evidence of evidenceLayer.evidence_hashes) {
-        const timestamp = evidence.timestamp ?? 'unknown';
+        const timestamp = evidence.timestamp ?? "unknown";
         lines.push(`  [${timestamp}] ${evidence.type}: ${evidence.hash}`);
       }
     }
 
-    if (evidenceLayer.aep_references && evidenceLayer.aep_references.length > 0) {
-      lines.push('');
-      lines.push('AEP Event References:');
+    if (
+      evidenceLayer.aep_references &&
+      evidenceLayer.aep_references.length > 0
+    ) {
+      lines.push("");
+      lines.push("AEP Event References:");
       for (const ref of evidenceLayer.aep_references) {
         lines.push(`  → ${ref}`);
       }
     }
 
     if (
-      (!evidenceLayer.evidence_hashes || evidenceLayer.evidence_hashes.length === 0) &&
-      (!evidenceLayer.aep_references || evidenceLayer.aep_references.length === 0)
+      (!evidenceLayer.evidence_hashes ||
+        evidenceLayer.evidence_hashes.length === 0) &&
+      (!evidenceLayer.aep_references ||
+        evidenceLayer.aep_references.length === 0)
     ) {
-      lines.push('');
-      lines.push('  No evidence citations found.');
+      lines.push("");
+      lines.push("  No evidence citations found.");
     }
   }
 
   // Audit Log Entries
   if (auditLogs.length > 0) {
-    lines.push('');
+    lines.push("");
     lines.push(
-      '────────────────────────────────────────────────────────────────────────────────────',
+      "────────────────────────────────────────────────────────────────────────────────────",
     );
-    lines.push('                              AUDIT TRAIL');
+    lines.push("                              AUDIT TRAIL");
     lines.push(
-      '────────────────────────────────────────────────────────────────────────────────────',
+      "────────────────────────────────────────────────────────────────────────────────────",
     );
 
     // Group by event type for better readability
     const logsByEventType = new Map<string, AuditLogEntry[]>();
     for (const log of auditLogs) {
-      const eventType = log.event_type ?? 'unknown';
+      const eventType = log.event_type ?? "unknown";
       if (!logsByEventType.has(eventType)) {
         logsByEventType.set(eventType, []);
       }
@@ -229,20 +248,22 @@ export function generateAuditReport(bom: AgentBOM): string {
     for (const eventType of sortedEventTypes) {
       const events = logsByEventType.get(eventType) ?? [];
 
-      lines.push('');
+      lines.push("");
       lines.push(`${eventType} (${events.length} events):`);
 
       // Sort events by timestamp
       const sortedEvents = events.sort(
-        (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
       );
 
       for (const event of sortedEvents) {
         const timestamp = event.timestamp;
         const actor = event.actor;
-        const resource = event.resource ?? 'N/A';
-        const outcome = event.outcome ?? 'unknown';
-        const outcomeSymbol = outcome === 'success' ? '✓' : outcome === 'failure' ? '✗' : '○';
+        const resource = event.resource ?? "N/A";
+        const outcome = event.outcome ?? "unknown";
+        const outcomeSymbol =
+          outcome === "success" ? "✓" : outcome === "failure" ? "✗" : "○";
 
         lines.push(`  ${outcomeSymbol} [${timestamp}]`);
         lines.push(`      Actor: ${actor}`);
@@ -255,25 +276,29 @@ export function generateAuditReport(bom: AgentBOM): string {
       }
     }
   } else {
-    lines.push('');
+    lines.push("");
     lines.push(
-      '────────────────────────────────────────────────────────────────────────────────────',
+      "────────────────────────────────────────────────────────────────────────────────────",
     );
-    lines.push('                              AUDIT TRAIL');
+    lines.push("                              AUDIT TRAIL");
     lines.push(
-      '────────────────────────────────────────────────────────────────────────────────────',
+      "────────────────────────────────────────────────────────────────────────────────────",
     );
-    lines.push('');
-    lines.push('  No audit log entries found.');
+    lines.push("");
+    lines.push("  No audit log entries found.");
   }
 
   // Footer
-  lines.push('');
-  lines.push('════════════════════════════════════════════════════════════════════════════════');
+  lines.push("");
+  lines.push(
+    "════════════════════════════════════════════════════════════════════════════════",
+  );
   lines.push(`Report Generated: ${new Date().toISOString()}`);
-  lines.push('════════════════════════════════════════════════════════════════════════════════');
+  lines.push(
+    "════════════════════════════════════════════════════════════════════════════════",
+  );
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 // ---------------------------------------------------------------------------
@@ -360,16 +385,22 @@ function reconstructCausalChains(boms: AgentBOM[]): CausalChain[] {
   }
   const allEntries: TaggedEntry[] = [];
   for (const bom of boms) {
-    const aid = bom.identity?.agent_id ?? 'unknown';
+    const aid = bom.identity?.agent_id ?? "unknown";
     const aname = bom.identity?.agent_name ?? aid;
     for (const entry of bom.audit_log ?? []) {
-      allEntries.push({ entry, source_agent_id: aid, source_agent_name: aname });
+      allEntries.push({
+        entry,
+        source_agent_id: aid,
+        source_agent_name: aname,
+      });
     }
   }
 
   // Sort all entries chronologically
   allEntries.sort(
-    (a, b) => new Date(a.entry.timestamp).getTime() - new Date(b.entry.timestamp).getTime(),
+    (a, b) =>
+      new Date(a.entry.timestamp).getTime() -
+      new Date(b.entry.timestamp).getTime(),
   );
 
   // Build causal chains by following delegation / shared-resource links
@@ -469,7 +500,8 @@ function isCausallyLinked(
     for (const peer of peers) {
       if (peer.agent_id === candidate.source_agent_id) {
         // Peer relationship + temporal proximity (within 60s)
-        const timeDiff = new Date(ce.timestamp).getTime() - new Date(pe.timestamp).getTime();
+        const timeDiff =
+          new Date(ce.timestamp).getTime() - new Date(pe.timestamp).getTime();
         if (timeDiff >= 0 && timeDiff <= 60_000) {
           return true;
         }
@@ -484,8 +516,11 @@ function isCausallyLinked(
  * Build a human-readable summary string for a causal chain.
  * Example: "Agent A delegated to Agent B which accessed tool C"
  */
-function buildChainSummary(steps: CausalStep[], nameLookup: Map<string, string>): string {
-  if (steps.length === 0) return '';
+function buildChainSummary(
+  steps: CausalStep[],
+  nameLookup: Map<string, string>,
+): string {
+  if (steps.length === 0) return "";
 
   const parts: string[] = [];
   for (let i = 0; i < steps.length; i++) {
@@ -496,7 +531,7 @@ function buildChainSummary(steps: CausalStep[], nameLookup: Map<string, string>)
       parts.push(name);
     } else {
       const prevStep = steps[i - 1];
-      if (step.event_type.includes('delegat')) {
+      if (step.event_type.includes("delegat")) {
         parts.push(`delegated to ${name}`);
       } else if (step.resource) {
         parts.push(`${name} accessed ${step.resource}`);
@@ -506,7 +541,7 @@ function buildChainSummary(steps: CausalStep[], nameLookup: Map<string, string>)
     }
   }
 
-  return parts.join(' which ');
+  return parts.join(" which ");
 }
 
 /**
@@ -516,25 +551,29 @@ export function generateMultiAgentAuditReport(boms: AgentBOM[]): string {
   const lines: string[] = [];
 
   // Header
-  lines.push('════════════════════════════════════════════════════════════════════════════════');
-  lines.push('                     MULTI-AGENT TRUST AUDIT REPORT');
-  lines.push('════════════════════════════════════════════════════════════════════════════════');
+  lines.push(
+    "════════════════════════════════════════════════════════════════════════════════",
+  );
+  lines.push("                     MULTI-AGENT TRUST AUDIT REPORT");
+  lines.push(
+    "════════════════════════════════════════════════════════════════════════════════",
+  );
   lines.push(`Report Generated: ${new Date().toISOString()}`);
   lines.push(`Agents in Scope:  ${boms.length}`);
 
   // Agent roster
-  lines.push('');
+  lines.push("");
   lines.push(
-    '────────────────────────────────────────────────────────────────────────────────────',
+    "────────────────────────────────────────────────────────────────────────────────────",
   );
-  lines.push('                              AGENT ROSTER');
+  lines.push("                              AGENT ROSTER");
   lines.push(
-    '────────────────────────────────────────────────────────────────────────────────────',
+    "────────────────────────────────────────────────────────────────────────────────────",
   );
 
   for (const bom of boms) {
-    const id = bom.identity?.agent_id ?? 'unknown';
-    const name = bom.identity?.agent_name ?? 'unnamed';
+    const id = bom.identity?.agent_id ?? "unknown";
+    const name = bom.identity?.agent_name ?? "unnamed";
     const peers = bom.agent_collaboration?.peer_agents?.length ?? 0;
     const sharedRes = bom.agent_collaboration?.shared_resources?.length ?? 0;
     lines.push(`  ${name} (${id})`);
@@ -559,13 +598,13 @@ export function generateMultiAgentAuditReport(boms: AgentBOM[]): string {
     }
   }
 
-  lines.push('');
+  lines.push("");
   lines.push(
-    '────────────────────────────────────────────────────────────────────────────────────',
+    "────────────────────────────────────────────────────────────────────────────────────",
   );
-  lines.push('                         COLLABORATION TOPOLOGY');
+  lines.push("                         COLLABORATION TOPOLOGY");
   lines.push(
-    '────────────────────────────────────────────────────────────────────────────────────',
+    "────────────────────────────────────────────────────────────────────────────────────",
   );
   lines.push(`  Unique Peer Agents:       ${totalPeers.size}`);
   lines.push(`  Shared Resources:         ${totalShared.size}`);
@@ -573,13 +612,15 @@ export function generateMultiAgentAuditReport(boms: AgentBOM[]): string {
 
   // Delegation boundary details
   if (totalBoundaries.length > 0) {
-    lines.push('');
-    lines.push('  Delegation Boundaries:');
+    lines.push("");
+    lines.push("  Delegation Boundaries:");
     for (const b of totalBoundaries) {
       const targets = b.target_agents?.length
-        ? ` → [${b.target_agents.join(', ')}]`
-        : ' → [all peers]';
-      lines.push(`    ${b.boundary_id} (${b.direction}, ${b.constraint_type})${targets}`);
+        ? ` → [${b.target_agents.join(", ")}]`
+        : " → [all peers]";
+      lines.push(
+        `    ${b.boundary_id} (${b.direction}, ${b.constraint_type})${targets}`,
+      );
       if (b.description) lines.push(`      ${b.description}`);
       if (b.max_delegation_depth !== undefined) {
         lines.push(`      Max delegation depth: ${b.max_delegation_depth}`);
@@ -589,17 +630,20 @@ export function generateMultiAgentAuditReport(boms: AgentBOM[]): string {
 
   // Shared resource details
   if (totalShared.size > 0) {
-    lines.push('');
-    lines.push('  Shared Resources:');
+    lines.push("");
+    lines.push("  Shared Resources:");
     const seen = new Set<string>();
     for (const bom of boms) {
       for (const sr of bom.agent_collaboration?.shared_resources ?? []) {
         if (seen.has(sr.resource_id)) continue;
         seen.add(sr.resource_id);
-        const agents = sr.accessing_agents?.join(', ') ?? 'unspecified';
-        lines.push(`    ${sr.resource_id} (${sr.resource_type}, ${sr.access_pattern})`);
+        const agents = sr.accessing_agents?.join(", ") ?? "unspecified";
+        lines.push(
+          `    ${sr.resource_id} (${sr.resource_type}, ${sr.access_pattern})`,
+        );
         lines.push(`      Accessed by: ${agents}`);
-        if (sr.isolation_level) lines.push(`      Isolation: ${sr.isolation_level}`);
+        if (sr.isolation_level)
+          lines.push(`      Isolation: ${sr.isolation_level}`);
       }
     }
   }
@@ -607,43 +651,46 @@ export function generateMultiAgentAuditReport(boms: AgentBOM[]): string {
   // Cross-agent causal chains
   const chains = reconstructCausalChains(boms);
 
-  lines.push('');
+  lines.push("");
   lines.push(
-    '────────────────────────────────────────────────────────────────────────────────────',
+    "────────────────────────────────────────────────────────────────────────────────────",
   );
-  lines.push('                         CAUSAL CHAIN ANALYSIS');
+  lines.push("                         CAUSAL CHAIN ANALYSIS");
   lines.push(
-    '────────────────────────────────────────────────────────────────────────────────────',
+    "────────────────────────────────────────────────────────────────────────────────────",
   );
 
   if (chains.length === 0) {
-    lines.push('');
-    lines.push('  No cross-agent causal chains detected.');
+    lines.push("");
+    lines.push("  No cross-agent causal chains detected.");
   } else {
     lines.push(`  Reconstructed Causal Chains: ${chains.length}`);
-    lines.push('');
+    lines.push("");
 
     for (const chain of chains) {
       lines.push(`  ┌─ ${chain.chain_id}: ${chain.summary}`);
       for (const step of chain.steps) {
         const name = step.agent_name;
-        const outcome = step.outcome ?? 'unknown';
-        const symbol = outcome === 'success' ? '✓' : outcome === 'failure' ? '✗' : '○';
-        const resource = step.resource ? ` → ${step.resource}` : '';
-        lines.push(`  │  ${symbol} [${step.timestamp}] ${name}: ${step.event_type}${resource}`);
+        const outcome = step.outcome ?? "unknown";
+        const symbol =
+          outcome === "success" ? "✓" : outcome === "failure" ? "✗" : "○";
+        const resource = step.resource ? ` → ${step.resource}` : "";
+        lines.push(
+          `  │  ${symbol} [${step.timestamp}] ${name}: ${step.event_type}${resource}`,
+        );
       }
-      lines.push(`  └${'─'.repeat(Math.max(2, chain.summary.length + 12))}`);
-      lines.push('');
+      lines.push(`  └${"─".repeat(Math.max(2, chain.summary.length + 12))}`);
+      lines.push("");
     }
   }
 
   // Combined audit summary statistics
   lines.push(
-    '────────────────────────────────────────────────────────────────────────────────────',
+    "────────────────────────────────────────────────────────────────────────────────────",
   );
-  lines.push('                         COMBINED AUDIT SUMMARY');
+  lines.push("                         COMBINED AUDIT SUMMARY");
   lines.push(
-    '────────────────────────────────────────────────────────────────────────────────────',
+    "────────────────────────────────────────────────────────────────────────────────────",
   );
 
   const combinedStats = { success: 0, failure: 0, partial: 0, unknown: 0 };
@@ -654,12 +701,15 @@ export function generateMultiAgentAuditReport(boms: AgentBOM[]): string {
   for (const bom of boms) {
     for (const log of bom.audit_log ?? []) {
       const outcome = log.outcome;
-      if (outcome === 'success') combinedStats.success++;
-      else if (outcome === 'failure') combinedStats.failure++;
-      else if (outcome === 'partial') combinedStats.partial++;
+      if (outcome === "success") combinedStats.success++;
+      else if (outcome === "failure") combinedStats.failure++;
+      else if (outcome === "partial") combinedStats.partial++;
       else combinedStats.unknown++;
 
-      eventTypeCounts.set(log.event_type, (eventTypeCounts.get(log.event_type) ?? 0) + 1);
+      eventTypeCounts.set(
+        log.event_type,
+        (eventTypeCounts.get(log.event_type) ?? 0) + 1,
+      );
     }
     for (const risk of bom.risk_layer ?? []) {
       totalRisks++;
@@ -669,7 +719,10 @@ export function generateMultiAgentAuditReport(boms: AgentBOM[]): string {
   }
 
   const totalEvents =
-    combinedStats.success + combinedStats.failure + combinedStats.partial + combinedStats.unknown;
+    combinedStats.success +
+    combinedStats.failure +
+    combinedStats.partial +
+    combinedStats.unknown;
   lines.push(`  Total Audit Events:       ${totalEvents}`);
   lines.push(`  Successful Events:        ${combinedStats.success}`);
   lines.push(`  Failed Events:            ${combinedStats.failure}`);
@@ -680,9 +733,11 @@ export function generateMultiAgentAuditReport(boms: AgentBOM[]): string {
 
   // Per-event-type breakdown
   if (eventTypeCounts.size > 0) {
-    lines.push('');
-    lines.push('  Events by Type:');
-    const sortedTypes = Array.from(eventTypeCounts.entries()).sort((a, b) => b[1] - a[1]);
+    lines.push("");
+    lines.push("  Events by Type:");
+    const sortedTypes = Array.from(eventTypeCounts.entries()).sort(
+      (a, b) => b[1] - a[1],
+    );
     for (const [type, count] of sortedTypes) {
       lines.push(`    ${type}: ${count}`);
     }
@@ -690,8 +745,8 @@ export function generateMultiAgentAuditReport(boms: AgentBOM[]): string {
 
   // Risk severity summary
   if (totalRisks > 0) {
-    lines.push('');
-    lines.push('  Risk Severity Distribution:');
+    lines.push("");
+    lines.push("  Risk Severity Distribution:");
     lines.push(`    Critical: ${riskBySeverity.critical}`);
     lines.push(`    High:     ${riskBySeverity.high}`);
     lines.push(`    Medium:   ${riskBySeverity.medium}`);
@@ -700,34 +755,45 @@ export function generateMultiAgentAuditReport(boms: AgentBOM[]): string {
   }
 
   // Per-agent risk summary
-  lines.push('');
-  lines.push('  Risk per Agent:');
+  lines.push("");
+  lines.push("  Risk per Agent:");
   for (const bom of boms) {
-    const id = bom.identity?.agent_id ?? 'unknown';
-    const name = bom.identity?.agent_name ?? 'unnamed';
+    const id = bom.identity?.agent_id ?? "unknown";
+    const name = bom.identity?.agent_name ?? "unnamed";
     const risks = bom.risk_layer ?? [];
-    const open = risks.filter((r) => r.status === 'open').length;
-    const critical = risks.filter((r) => r.severity.toLowerCase() === 'critical').length;
-    lines.push(`    ${name}: ${risks.length} total, ${open} open, ${critical} critical`);
+    const open = risks.filter((r) => r.status === "open").length;
+    const critical = risks.filter(
+      (r) => r.severity.toLowerCase() === "critical",
+    ).length;
+    lines.push(
+      `    ${name}: ${risks.length} total, ${open} open, ${critical} critical`,
+    );
   }
 
   // Footer
-  lines.push('');
-  lines.push('════════════════════════════════════════════════════════════════════════════════');
+  lines.push("");
+  lines.push(
+    "════════════════════════════════════════════════════════════════════════════════",
+  );
   lines.push(`Report Generated: ${new Date().toISOString()}`);
-  lines.push('════════════════════════════════════════════════════════════════════════════════');
+  lines.push(
+    "════════════════════════════════════════════════════════════════════════════════",
+  );
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 /**
  * Load and validate a single AgentBOM from a file path.
  */
-function loadAgentBOM(filePath: string): { bom: AgentBOM | null; error: string | null } {
+function loadAgentBOM(filePath: string): {
+  bom: AgentBOM | null;
+  error: string | null;
+} {
   const resolved = resolve(filePath);
   let content: string;
   try {
-    content = readFileSync(resolved, 'utf-8');
+    content = readFileSync(resolved, "utf-8");
   } catch {
     return { bom: null, error: `cannot read file "${resolved}"` };
   }
@@ -742,7 +808,10 @@ function loadAgentBOM(filePath: string): { bom: AgentBOM | null; error: string |
   const bom = data as AgentBOM;
   const validation = validateAgentBOM(bom);
   if (!validation.valid) {
-    return { bom: null, error: `Invalid AgentBOM: ${validation.errors.join('; ')}` };
+    return {
+      bom: null,
+      error: `Invalid AgentBOM: ${validation.errors.join("; ")}`,
+    };
   }
 
   return { bom, error: null };
@@ -754,22 +823,22 @@ function loadAgentBOM(filePath: string): { bom: AgentBOM | null; error: string |
  * Usage: agent-trust audit-report multi <bom1.json> [bom2.json ...]
  */
 export function multiAgentAuditReportCommand(args: string[]): number {
-  if (args.length === 0 || args[0] === '--help' || args[0] === '-h') {
+  if (args.length === 0 || args[0] === "--help" || args[0] === "-h") {
     console.log(
       [
-        'Usage: agent-trust audit-report multi <bom1.json> [bom2.json ...]',
-        '',
-        'Generates a unified multi-agent audit report with causal chain reconstruction',
-        'across a team of agents described by their AgentBOM files.',
-        '',
-        'The report includes:',
-        '  - Agent roster with collaboration topology',
-        '  - Delegation boundary analysis',
-        '  - Shared resource access patterns',
+        "Usage: agent-trust audit-report multi <bom1.json> [bom2.json ...]",
+        "",
+        "Generates a unified multi-agent audit report with causal chain reconstruction",
+        "across a team of agents described by their AgentBOM files.",
+        "",
+        "The report includes:",
+        "  - Agent roster with collaboration topology",
+        "  - Delegation boundary analysis",
+        "  - Shared resource access patterns",
         '  - Causal chain reconstruction (e.g., "Agent A delegated to Agent B which accessed tool C")',
-        '  - Combined audit summary statistics',
-        '  - Per-agent risk breakdown',
-      ].join('\n'),
+        "  - Combined audit summary statistics",
+        "  - Per-agent risk breakdown",
+      ].join("\n"),
     );
     return 0;
   }
@@ -779,9 +848,9 @@ export function multiAgentAuditReportCommand(args: string[]): number {
   let dirPath: string | null = null;
 
   for (let i = 0; i < args.length; i++) {
-    if (args[i] === '--dir' && i + 1 < args.length) {
+    if (args[i] === "--dir" && i + 1 < args.length) {
       dirPath = args[++i];
-    } else if (!args[i].startsWith('--')) {
+    } else if (!args[i].startsWith("--")) {
       filePaths.push(args[i]);
     }
   }
@@ -796,7 +865,7 @@ export function multiAgentAuditReportCommand(args: string[]): number {
       return 1;
     }
     for (const entry of entries) {
-      if (entry.endsWith('.json')) {
+      if (entry.endsWith(".json")) {
         const fullPath = resolve(resolvedDir, entry);
         if (statSync(fullPath).isFile()) {
           filePaths.push(fullPath);
@@ -807,7 +876,7 @@ export function multiAgentAuditReportCommand(args: string[]): number {
 
   if (filePaths.length === 0) {
     console.error(
-      'Error: no AgentBOM files provided. Use: audit-report multi <bom1.json> [bom2.json ...] or --dir <directory>',
+      "Error: no AgentBOM files provided. Use: audit-report multi <bom1.json> [bom2.json ...] or --dir <directory>",
     );
     return 1;
   }
@@ -823,7 +892,7 @@ export function multiAgentAuditReportCommand(args: string[]): number {
   }
 
   if (boms.length === 0) {
-    console.error('Error: no valid AgentBOM files found');
+    console.error("Error: no valid AgentBOM files found");
     return 1;
   }
 
@@ -834,43 +903,43 @@ export function multiAgentAuditReportCommand(args: string[]): number {
 
 export function auditReportCommand(args: string[]): number {
   // Dispatch to multi-agent subcommand
-  if (args.length > 0 && args[0] === 'multi') {
+  if (args.length > 0 && args[0] === "multi") {
     return multiAgentAuditReportCommand(args.slice(1));
   }
 
-  if (args.length === 0 || args[0] === '--help' || args[0] === '-h') {
+  if (args.length === 0 || args[0] === "--help" || args[0] === "-h") {
     console.log(
       [
-        'Usage: agent-trust audit-report <bom.json>',
-        '       agent-trust audit-report multi <bom1.json> [bom2.json ...]',
-        '       agent-trust audit-report multi --dir <directory>',
-        '',
-        'Generates a human-readable audit summary with evidence citations from an AgentBOM file.',
+        "Usage: agent-trust audit-report <bom.json>",
+        "       agent-trust audit-report multi <bom1.json> [bom2.json ...]",
+        "       agent-trust audit-report multi --dir <directory>",
+        "",
+        "Generates a human-readable audit summary with evidence citations from an AgentBOM file.",
         'Use "multi" subcommand for unified multi-agent audit reports with causal chain reconstruction.',
-        '',
-        'Arguments:',
-        '  <bom.json>  Path to the AgentBOM JSON file',
-        '',
-        'Output includes:',
-        '  - Agent identity information',
-        '  - Audit summary statistics',
-        '  - Risk summary by severity',
-        '  - Evidence citations (hashes and AEP references)',
-        '  - Detailed audit trail grouped by event type',
-      ].join('\n'),
+        "",
+        "Arguments:",
+        "  <bom.json>  Path to the AgentBOM JSON file",
+        "",
+        "Output includes:",
+        "  - Agent identity information",
+        "  - Audit summary statistics",
+        "  - Risk summary by severity",
+        "  - Evidence citations (hashes and AEP references)",
+        "  - Detailed audit trail grouped by event type",
+      ].join("\n"),
     );
     return 0;
   }
 
   const bomPath = args[0];
   try {
-    const content = readFileSync(resolve(bomPath), 'utf-8');
+    const content = readFileSync(resolve(bomPath), "utf-8");
     const data = JSON.parse(content) as AgentBOM;
 
     // Validate the AgentBOM
     const validation = validateAgentBOM(data);
     if (!validation.valid) {
-      console.error('Error: Invalid AgentBOM file:');
+      console.error("Error: Invalid AgentBOM file:");
       for (const error of validation.errors) {
         console.error(`  ${error}`);
       }

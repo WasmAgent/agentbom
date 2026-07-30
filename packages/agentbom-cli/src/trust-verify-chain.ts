@@ -18,13 +18,13 @@
  * Usage:
  *   trust-cli verify-chain <passport.jwt> --depth N [--key <pubkey>] [--registry <dir>] [--help]
  */
-import { resolve } from 'node:path';
-import { validateTrustPassport } from '@openagentaudit/passport';
-import { validateAgentBOM } from '@wasmagent/agentbom-core';
-import { validateMCPPosture } from '@wasmagent/mcp-posture';
-import { verifySignedPassport } from './passport-verify-signed.js';
-import type { ArtifactType } from './trust-publish.js';
-import { pullArtifact, resolveArtifactId } from './trust-pull.js';
+import { resolve } from "node:path";
+import { validateTrustPassport } from "@openagentaudit/passport";
+import { validateAgentBOM } from "@wasmagent/agentbom-core";
+import { validateMCPPosture } from "@wasmagent/mcp-posture";
+import { verifySignedPassport } from "./passport-verify-signed.js";
+import type { ArtifactType } from "./trust-publish.js";
+import { pullArtifact, resolveArtifactId } from "./trust-pull.js";
 
 // ---- Types ----
 
@@ -43,7 +43,7 @@ export interface VerifyChainConfig {
 /** Verification status for a single node in the trust chain. */
 export interface ChainNodeResult {
   /** Type of artifact this node represents. */
-  nodeType: 'passport' | 'agentbom' | 'mcp-posture' | 'unknown';
+  nodeType: "passport" | "agentbom" | "mcp-posture" | "unknown";
   /** Reference identifier (CAS id, file path, or tag). */
   reference: string;
   /** Whether this node passed all verification checks. */
@@ -101,27 +101,32 @@ function extractPassportReferences(
 ): { id: string; label: string }[] {
   const refs: { id: string; label: string }[] = [];
 
-  const agentbomRef = payload.agentbom_ref as Record<string, unknown> | undefined;
-  if (agentbomRef && typeof agentbomRef.agentbom_id === 'string') {
-    refs.push({ id: agentbomRef.agentbom_id as string, label: 'agentbom_ref' });
+  const agentbomRef = payload.agentbom_ref as
+    | Record<string, unknown>
+    | undefined;
+  if (agentbomRef && typeof agentbomRef.agentbom_id === "string") {
+    refs.push({ id: agentbomRef.agentbom_id as string, label: "agentbom_ref" });
   }
 
   const postureRef = payload.posture_ref as Record<string, unknown> | undefined;
-  if (postureRef && typeof postureRef.snapshot_id === 'string') {
-    refs.push({ id: postureRef.snapshot_id as string, label: 'posture_ref' });
+  if (postureRef && typeof postureRef.snapshot_id === "string") {
+    refs.push({ id: postureRef.snapshot_id as string, label: "posture_ref" });
   }
 
   if (Array.isArray(payload.dependencies)) {
     for (const dep of payload.dependencies) {
-      if (typeof dep === 'string' && dep.length > 0) {
-        refs.push({ id: dep, label: 'dependency' });
+      if (typeof dep === "string" && dep.length > 0) {
+        refs.push({ id: dep, label: "dependency" });
       } else if (
         dep &&
-        typeof dep === 'object' &&
+        typeof dep === "object" &&
         !Array.isArray(dep) &&
-        typeof (dep as Record<string, unknown>).id === 'string'
+        typeof (dep as Record<string, unknown>).id === "string"
       ) {
-        refs.push({ id: (dep as Record<string, unknown>).id as string, label: 'dependency' });
+        refs.push({
+          id: (dep as Record<string, unknown>).id as string,
+          label: "dependency",
+        });
       }
     }
   }
@@ -143,26 +148,31 @@ function extractArtifactReferences(
 ): { id: string; label: string }[] {
   const refs: { id: string; label: string }[] = [];
 
-  const distribution = artifact.distribution as Record<string, unknown> | undefined;
+  const distribution = artifact.distribution as
+    | Record<string, unknown>
+    | undefined;
   if (distribution && Array.isArray(distribution.supersedes)) {
     for (const id of distribution.supersedes) {
-      if (typeof id === 'string' && id.length > 0) {
-        refs.push({ id, label: 'supersedes' });
+      if (typeof id === "string" && id.length > 0) {
+        refs.push({ id, label: "supersedes" });
       }
     }
   }
 
   if (Array.isArray(artifact.dependencies)) {
     for (const dep of artifact.dependencies) {
-      if (typeof dep === 'string' && dep.length > 0) {
-        refs.push({ id: dep, label: 'dependency' });
+      if (typeof dep === "string" && dep.length > 0) {
+        refs.push({ id: dep, label: "dependency" });
       } else if (
         dep &&
-        typeof dep === 'object' &&
+        typeof dep === "object" &&
         !Array.isArray(dep) &&
-        typeof (dep as Record<string, unknown>).id === 'string'
+        typeof (dep as Record<string, unknown>).id === "string"
       ) {
-        refs.push({ id: (dep as Record<string, unknown>).id as string, label: 'dependency' });
+        refs.push({
+          id: (dep as Record<string, unknown>).id as string,
+          label: "dependency",
+        });
       }
     }
   }
@@ -177,16 +187,16 @@ function extractArtifactReferences(
  */
 function validateArtifactNode(data: unknown): {
   valid: boolean;
-  nodeType: ChainNodeResult['nodeType'];
+  nodeType: ChainNodeResult["nodeType"];
   errors: string[];
   artifactType: ArtifactType;
 } {
-  if (typeof data !== 'object' || data === null || Array.isArray(data)) {
+  if (typeof data !== "object" || data === null || Array.isArray(data)) {
     return {
       valid: false,
-      nodeType: 'unknown',
-      errors: ['artifact is not a JSON object'],
-      artifactType: 'unknown',
+      nodeType: "unknown",
+      errors: ["artifact is not a JSON object"],
+      artifactType: "unknown",
     };
   }
   const obj = data as Record<string, unknown>;
@@ -196,46 +206,63 @@ function validateArtifactNode(data: unknown): {
   const postureResult = validateMCPPosture(data);
 
   if (bomResult.valid) {
-    return { valid: true, nodeType: 'agentbom', errors: [], artifactType: 'agentbom' };
+    return {
+      valid: true,
+      nodeType: "agentbom",
+      errors: [],
+      artifactType: "agentbom",
+    };
   }
   if (postureResult.valid) {
-    return { valid: true, nodeType: 'mcp-posture', errors: [], artifactType: 'mcp-posture' };
+    return {
+      valid: true,
+      nodeType: "mcp-posture",
+      errors: [],
+      artifactType: "mcp-posture",
+    };
   }
   if (passportResult.valid) {
-    return { valid: true, nodeType: 'passport', errors: [], artifactType: 'trust-passport' };
+    return {
+      valid: true,
+      nodeType: "passport",
+      errors: [],
+      artifactType: "trust-passport",
+    };
   }
 
   // Return the best-guess error set
   if (obj.agentbom_version !== undefined) {
     return {
       valid: false,
-      nodeType: 'agentbom',
+      nodeType: "agentbom",
       errors: bomResult.errors,
-      artifactType: 'unknown',
+      artifactType: "unknown",
     };
   }
   if (obj.posture_version !== undefined) {
     return {
       valid: false,
-      nodeType: 'mcp-posture',
+      nodeType: "mcp-posture",
       errors: postureResult.errors,
-      artifactType: 'unknown',
+      artifactType: "unknown",
     };
   }
   if (obj.passport_version !== undefined) {
     return {
       valid: false,
-      nodeType: 'passport',
+      nodeType: "passport",
       errors: passportResult.errors,
-      artifactType: 'unknown',
+      artifactType: "unknown",
     };
   }
 
   return {
     valid: false,
-    nodeType: 'unknown',
-    errors: ['artifact does not match any known schema (AgentBOM, MCP Posture, or Trust Passport)'],
-    artifactType: 'unknown',
+    nodeType: "unknown",
+    errors: [
+      "artifact does not match any known schema (AgentBOM, MCP Posture, or Trust Passport)",
+    ],
+    artifactType: "unknown",
   };
 }
 
@@ -264,7 +291,7 @@ function verifyNode(
     string,
     {
       valid: boolean;
-      nodeType: ChainNodeResult['nodeType'];
+      nodeType: ChainNodeResult["nodeType"];
       errors: string[];
       artifactType: ArtifactType;
     }
@@ -273,7 +300,7 @@ function verifyNode(
   stats: { cacheHits: number; cacheMisses: number },
 ): ChainNodeResult {
   const node: ChainNodeResult = {
-    nodeType: 'unknown',
+    nodeType: "unknown",
     reference: artifactId,
     valid: false,
     depth: currentDepth,
@@ -284,7 +311,9 @@ function verifyNode(
   // Resolve the artifact id
   const resolved = resolveArtifactId(artifactId, registryDir);
   if (!resolved) {
-    node.errors.push(`artifact "${artifactId}" could not be resolved (not a CAS id or known tag)`);
+    node.errors.push(
+      `artifact "${artifactId}" could not be resolved (not a CAS id or known tag)`,
+    );
     allNodes.push(node);
     return node;
   }
@@ -293,7 +322,7 @@ function verifyNode(
 
   // Cycle check
   if (visited.has(casId)) {
-    node.errors.push('cycle — artifact already visited in this chain');
+    node.errors.push("cycle — artifact already visited in this chain");
     node.valid = true; // Already verified earlier
     stats.cacheHits++;
     allNodes.push(node);
@@ -316,13 +345,13 @@ function verifyNode(
 
   // Pull the artifact from registry
   const pullResult = pullArtifact(casId, registryDir);
-  if (typeof pullResult === 'string') {
+  if (typeof pullResult === "string") {
     node.errors.push(pullResult);
     cache.set(casId, {
       valid: false,
-      nodeType: 'unknown',
+      nodeType: "unknown",
       errors: node.errors,
-      artifactType: 'unknown',
+      artifactType: "unknown",
     });
     allNodes.push(node);
     return node;
@@ -345,7 +374,10 @@ function verifyNode(
     node.errors.push(...validation.errors);
   }
 
-  node.valid = pullResult.integrityVerified && validation.valid && node.errors.length === 0;
+  node.valid =
+    pullResult.integrityVerified &&
+    validation.valid &&
+    node.errors.length === 0;
 
   // Cache the result
   cache.set(casId, validation);
@@ -388,7 +420,9 @@ function verifyNode(
  * Returns a {@link VerifyChainResult} on success, or an error string when
  * the JWT cannot be read or parsed.
  */
-export function verifyChain(config: VerifyChainConfig): VerifyChainResult | string {
+export function verifyChain(
+  config: VerifyChainConfig,
+): VerifyChainResult | string {
   // Step 1: Verify the root passport JWT
   let verifyResult: ReturnType<typeof verifySignedPassport>;
   try {
@@ -410,7 +444,7 @@ export function verifyChain(config: VerifyChainConfig): VerifyChainResult | stri
 
   // If payload is null, we can't follow any references
   if (!verifyResult.payload) {
-    const firstError = verifyResult.errors[0] ?? 'unknown error';
+    const firstError = verifyResult.errors[0] ?? "unknown error";
     return firstError;
   }
 
@@ -430,7 +464,7 @@ export function verifyChain(config: VerifyChainConfig): VerifyChainResult | stri
       string,
       {
         valid: boolean;
-        nodeType: ChainNodeResult['nodeType'];
+        nodeType: ChainNodeResult["nodeType"];
         errors: string[];
         artifactType: ArtifactType;
       }
@@ -465,7 +499,10 @@ export function verifyChain(config: VerifyChainConfig): VerifyChainResult | stri
   // Step 4: Determine overall validity
   const allNodesValid = allNodes.every((n) => n.valid);
   const rootValid =
-    root.signatureValid && !root.expired && root.structureValid && root.errors.length === 0;
+    root.signatureValid &&
+    !root.expired &&
+    root.structureValid &&
+    root.errors.length === 0;
   const valid = rootValid && (refs.length === 0 || allNodesValid);
 
   return {
@@ -482,42 +519,44 @@ export function verifyChain(config: VerifyChainConfig): VerifyChainResult | stri
 // ---- CLI command ----
 
 const VERIFY_CHAIN_USAGE = [
-  'Usage: agent-trust verify-chain <passport.jwt> [options]',
-  '',
-  'Perform recursive trust chain verification with configurable depth and',
-  'caching for multi-hop trust relationships.',
-  '',
-  'Given a signed Trust Passport JWT, verifies the signature and structure,',
-  'then follows artifact references (AgentBOM, MCP Posture) through the',
-  'local registry, validating each node in the chain.',
-  '',
-  'Arguments:',
-  '  <passport.jwt>    Path to a signed Trust Passport JWT file',
-  '',
-  'Options:',
-  '  --depth <N>       Maximum recursion depth for chain traversal (default: 3)',
-  '  --key <path>      Path to Ed25519 public key (PEM or 64-char hex)',
-  '  --registry <dir>  Path to the local registry directory',
-  '                     (default: ~/.trust-registry)',
-  '  --help, -h        Show this help message',
-  '',
-  'Examples:',
-  '  agent-trust verify-chain passport.jwt --key pubkey.pem',
-  '  agent-trust verify-chain passport.jwt --depth 5 --key pubkey.pem',
-  '  agent-trust verify-chain passport.jwt --depth 2 --key pubkey.pem --registry ./my-registry',
-  '',
-  'Output:',
-  '  Prints a JSON object with root passport verification status, chain node',
-  '  results, depth tracking, and cache statistics. Exits non-zero if the',
-  '  chain is invalid.',
-].join('\n');
+  "Usage: agent-trust verify-chain <passport.jwt> [options]",
+  "",
+  "Perform recursive trust chain verification with configurable depth and",
+  "caching for multi-hop trust relationships.",
+  "",
+  "Given a signed Trust Passport JWT, verifies the signature and structure,",
+  "then follows artifact references (AgentBOM, MCP Posture) through the",
+  "local registry, validating each node in the chain.",
+  "",
+  "Arguments:",
+  "  <passport.jwt>    Path to a signed Trust Passport JWT file",
+  "",
+  "Options:",
+  "  --depth <N>       Maximum recursion depth for chain traversal (default: 3)",
+  "  --key <path>      Path to Ed25519 public key (PEM or 64-char hex)",
+  "  --registry <dir>  Path to the local registry directory",
+  "                     (default: ~/.trust-registry)",
+  "  --help, -h        Show this help message",
+  "",
+  "Examples:",
+  "  agent-trust verify-chain passport.jwt --key pubkey.pem",
+  "  agent-trust verify-chain passport.jwt --depth 5 --key pubkey.pem",
+  "  agent-trust verify-chain passport.jwt --depth 2 --key pubkey.pem --registry ./my-registry",
+  "",
+  "Output:",
+  "  Prints a JSON object with root passport verification status, chain node",
+  "  results, depth tracking, and cache statistics. Exits non-zero if the",
+  "  chain is invalid.",
+].join("\n");
 
 /**
  * Parse verify-chain command arguments into a {@link VerifyChainConfig}.
  * Returns the config on success, or a usage/error string on failure.
  */
-export function parseVerifyChainArgs(args: string[]): VerifyChainConfig | string {
-  if (args.length === 0 || args[0] === '--help' || args[0] === '-h') {
+export function parseVerifyChainArgs(
+  args: string[],
+): VerifyChainConfig | string {
+  if (args.length === 0 || args[0] === "--help" || args[0] === "-h") {
     return VERIFY_CHAIN_USAGE;
   }
 
@@ -530,17 +569,17 @@ export function parseVerifyChainArgs(args: string[]): VerifyChainConfig | string
     const arg = args[i];
     const next = args[i + 1];
 
-    if (arg === '--depth' && next) {
+    if (arg === "--depth" && next) {
       const parsed = Number.parseInt(next, 10);
       if (Number.isNaN(parsed) || parsed < 0) {
         return `Error: --depth must be a non-negative integer, got "${next}"`;
       }
       maxDepth = parsed;
       i++;
-    } else if (arg === '--key' && next) {
+    } else if (arg === "--key" && next) {
       publicKeyPath = next;
       i++;
-    } else if (arg === '--registry' && next) {
+    } else if (arg === "--registry" && next) {
       registryDir = next;
       i++;
     } else {
@@ -549,8 +588,8 @@ export function parseVerifyChainArgs(args: string[]): VerifyChainConfig | string
   }
 
   const homeRegistry = resolve(
-    process.env.HOME ?? process.env.USERPROFILE ?? '~',
-    '.trust-registry',
+    process.env.HOME ?? process.env.USERPROFILE ?? "~",
+    ".trust-registry",
   );
 
   return {
@@ -568,8 +607,8 @@ export function parseVerifyChainArgs(args: string[]): VerifyChainConfig | string
  */
 export function verifyChainCommand(args: string[]): number {
   const parsed = parseVerifyChainArgs(args);
-  if (typeof parsed === 'string') {
-    if (parsed.startsWith('Usage:')) {
+  if (typeof parsed === "string") {
+    if (parsed.startsWith("Usage:")) {
       console.log(parsed);
       return 0;
     }
@@ -580,7 +619,7 @@ export function verifyChainCommand(args: string[]): number {
   const config = parsed;
 
   const result = verifyChain(config);
-  if (typeof result === 'string') {
+  if (typeof result === "string") {
     console.error(`Error: ${result}`);
     return 1;
   }

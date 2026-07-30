@@ -1,16 +1,13 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-import {
-  inspectMCPPosture,
-  validateMCPPosture,
-} from '@wasmagent/mcp-posture';
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { inspectMCPPosture, validateMCPPosture } from "@wasmagent/mcp-posture";
 
 export function inspectMCPPostureCommand(filePath: string): number {
   const resolvedPath = resolve(filePath);
 
   let raw: string;
   try {
-    raw = readFileSync(resolvedPath, 'utf-8');
+    raw = readFileSync(resolvedPath, "utf-8");
   } catch {
     console.error(`Error: cannot read file "${resolvedPath}"`);
     return 1;

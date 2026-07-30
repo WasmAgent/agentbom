@@ -55,6 +55,34 @@ export interface AutoGenAgentConfig {
   granted_scopes?: string[];
   data_access?: string[];
   credential_references?: string[];
+  /** Workflow / action pathway definitions. */
+  workflows?: AutoGenWorkflowConfig[];
+}
+
+export interface AutoGenWorkflowStep {
+  /** Unique step identifier within the workflow. */
+  step_id: string;
+  /** Action to perform (tool_id, prompt name, sub_workflow, or decision). */
+  action: string;
+  /** Human-readable step description. */
+  description?: string;
+  /** Step IDs this step depends on. */
+  depends_on?: string[];
+  /** Tool IDs allowed at this step. */
+  allowed_tools?: string[];
+}
+
+export interface AutoGenWorkflowConfig {
+  /** Unique workflow identifier. */
+  workflow_id: string;
+  /** Human-readable workflow name. */
+  workflow_name: string;
+  /** Workflow description. */
+  description?: string;
+  /** Workflow version (semver). */
+  version?: string;
+  /** Ordered steps. */
+  steps: AutoGenWorkflowStep[];
 }
 
 /** The shape of a generated AgentBOM document. */
@@ -92,6 +120,19 @@ export interface AgentBOMRecord {
     data_access?: string[];
     credential_references?: string[];
   };
+  workflow_layer?: Array<{
+    workflow_id: string;
+    workflow_name: string;
+    description?: string;
+    version?: string;
+    steps: Array<{
+      step_id: string;
+      action: string;
+      description?: string;
+      depends_on?: string[];
+      allowed_tools?: string[];
+    }>;
+  }>;
   attestation: {
     generator: string;
     generator_version: string;
@@ -183,6 +224,25 @@ export function generateAgentBOM(config: AutoGenAgentConfig): AgentBOMRecord {
               ? { credential_references: config.credential_references }
               : {}),
           },
+        }
+      : {}),
+    ...(config.workflows?.length
+      ? {
+          workflow_layer: config.workflows.map((wf) => ({
+            workflow_id: wf.workflow_id,
+            workflow_name: wf.workflow_name,
+            ...(wf.description ? { description: wf.description } : {}),
+            ...(wf.version ? { version: wf.version } : {}),
+            steps: wf.steps.map((s) => ({
+              step_id: s.step_id,
+              action: s.action,
+              ...(s.description ? { description: s.description } : {}),
+              ...(s.depends_on?.length ? { depends_on: s.depends_on } : {}),
+              ...(s.allowed_tools?.length
+                ? { allowed_tools: s.allowed_tools }
+                : {}),
+            })),
+          })),
         }
       : {}),
     attestation: {
