@@ -1,11 +1,11 @@
-import { validateMCPPosture } from "@wasmagent/mcp-posture";
+import { validateAgentBOM } from "@wasmagent/agentbom-core";
 import { readArtifactFile } from "./trust-publish.js";
 
-export function validateMCPPostureCommand(filePath: string): number {
+export function validateAgentBOMCommand(filePath: string): number {
   const { data, error } = readArtifactFile(filePath);
   if (error) return error;
 
-  const result = validateMCPPosture(data);
+  const result = validateAgentBOM(data);
   if (!result.valid) {
     console.error(`Validation failed for "${filePath}":`);
     for (const err of result.errors) {
@@ -14,6 +14,6 @@ export function validateMCPPostureCommand(filePath: string): number {
     return 1;
   }
 
-  console.log(`Valid MCP Posture v${data.posture_version}`);
+  console.log(`Valid AgentBOM v${data.agentbom_version}`);
   return 0;
 }

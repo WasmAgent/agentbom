@@ -267,7 +267,7 @@ describe("compliance-check: profile validation with fixtures", () => {
 
       expect(exitCode).toBe(1);
       expect(
-        errorOutput.some((line) => line.includes("cannot read AgentBOM file")),
+        errorOutput.some((line) => line.includes("cannot read file")),
       ).toBe(true);
     });
 

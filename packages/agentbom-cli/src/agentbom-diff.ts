@@ -1,10 +1,10 @@
-import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
   diffAgentBOM,
   formatAgentBOMDiff,
   validateAgentBOM,
 } from "@wasmagent/agentbom-core";
+import { readArtifactFile } from "./trust-publish.js";
 
 export function diffAgentBOMCommand(
   oldFilePath: string,
@@ -13,39 +13,13 @@ export function diffAgentBOMCommand(
   const oldPath = resolve(oldFilePath);
   const newPath = resolve(newFilePath);
 
-  let oldRaw: string;
-  try {
-    oldRaw = readFileSync(oldPath, "utf-8");
-  } catch {
-    console.error(`Error: cannot read file "${oldPath}"`);
-    return 1;
-  }
+  const oldFile = readArtifactFile(oldPath);
+  if (oldFile.error) return oldFile.error;
 
-  let newRaw: string;
-  try {
-    newRaw = readFileSync(newPath, "utf-8");
-  } catch {
-    console.error(`Error: cannot read file "${newPath}"`);
-    return 1;
-  }
+  const newFile = readArtifactFile(newPath);
+  if (newFile.error) return newFile.error;
 
-  let oldData: unknown;
-  try {
-    oldData = JSON.parse(oldRaw);
-  } catch {
-    console.error(`Error: "${oldPath}" is not valid JSON`);
-    return 1;
-  }
-
-  let newData: unknown;
-  try {
-    newData = JSON.parse(newRaw);
-  } catch {
-    console.error(`Error: "${newPath}" is not valid JSON`);
-    return 1;
-  }
-
-  const oldResult = validateAgentBOM(oldData);
+  const oldResult = validateAgentBOM(oldFile.data);
   if (!oldResult.valid) {
     console.error(`Validation failed for old file "${oldPath}":`);
     for (const err of oldResult.errors) {
@@ -54,7 +28,7 @@ export function diffAgentBOMCommand(
     return 1;
   }
 
-  const newResult = validateAgentBOM(newData);
+  const newResult = validateAgentBOM(newFile.data);
   if (!newResult.valid) {
     console.error(`Validation failed for new file "${newPath}":`);
     for (const err of newResult.errors) {
@@ -63,9 +37,7 @@ export function diffAgentBOMCommand(
     return 1;
   }
 
-  const oldBom = oldData as Record<string, unknown>;
-  const newBom = newData as Record<string, unknown>;
-  const diff = diffAgentBOM(oldBom, newBom);
+  const diff = diffAgentBOM(oldFile.data, newFile.data);
 
   console.log("Comparing AgentBOMs:");
   console.log(`  old: ${oldPath}`);
