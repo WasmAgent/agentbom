@@ -1869,3 +1869,14 @@ export {
   checkCompliance,
   computeWeightedScore,
 } from "./compliance.js";
+
+// Shared manifest generator — exported from generate.ts
+export {
+  type AgentBOMGenerateInput,
+  type AgentBOMLLMInput,
+  type AgentBOMRecord,
+  type AgentBOMToolInput,
+  type AgentBOMWorkflowInput,
+  type AgentBOMWorkflowStepInput,
+  buildAgentBOM,
+} from "./generate.js";

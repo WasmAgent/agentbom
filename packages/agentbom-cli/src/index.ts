@@ -1,6 +1,4 @@
 #!/usr/bin/env bun
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import {
   getLatestVersion as getLatestAgentBOMVersion,
   getSupportedVersions as getSupportedAgentBOMVersions,
@@ -14,6 +12,7 @@ import {
 import { diffAgentBOMCommand } from "./agentbom-diff.js";
 import { inspectAgentBOMCommand } from "./agentbom-inspect.js";
 import { agentbomPipelineCommand } from "./agentbom-pipeline.js";
+import { validateAgentBOMCommand } from "./agentbom-validate.js";
 import { auditReportCommand } from "./audit-report.js";
 import { generateAgentBOMCommand } from "./bom-generate.js";
 import { chainCommand } from "./chain.js";
@@ -35,7 +34,7 @@ import { verifySignedPassportCommand } from "./passport-verify-signed.js";
 import { reportCommand } from "./regulatory-report.js";
 import { verifySigstoreCommand } from "./sigstore-verify.js";
 import { trustDiffCommand } from "./trust-diff.js";
-import { publishCommand } from "./trust-publish.js";
+import { publishCommand, readArtifactFile } from "./trust-publish.js";
 import { pullCommand } from "./trust-pull.js";
 import { subscribeCommand } from "./trust-subscribe.js";
 import { verifyChainCommand } from "./trust-verify-chain.js";
@@ -51,6 +50,7 @@ const USAGE = [
   "  passport verify-signed <jwt-path> [--key <pubkey>]  Verify a signed passport JWT",
   "  passport verify-sigstore <bundle.json> [--artifact <path>] [--offline] [--fips] [--issuer <url>]  Verify with Sigstore bundle",
   "  agentbom inspect <path>    Inspect an AgentBOM file",
+  "  agentbom validate <path>   Validate an AgentBOM file",
   "  agentbom diff <old> <new>  Diff two AgentBOM files",
   "  agentbom pipeline <path> [--partitions N] [--no-incremental]  Stream-process BOM artifacts",
   "  agentbom generate --agent <path>  Generate AgentBOM JSON from agent directory",
@@ -102,131 +102,102 @@ function parseMigrateArgs(args: string[]): {
   return { filePath, target, dryRun };
 }
 
-/** Read and parse a JSON file, returning an error code on failure. */
-function readJsonFile(filePath: string): {
+/** Result shape shared by the AgentBOM and MCP Posture migrators. */
+interface MigrationOutcome {
+  success: boolean;
   data: Record<string, unknown>;
-  error: number;
-} {
-  const resolved = resolve(filePath);
-  let raw: string;
-  try {
-    raw = readFileSync(resolved, "utf-8");
-  } catch {
-    console.error(`Error: cannot read file "${resolved}"`);
-    return { data: {}, error: 1 };
+  stepsApplied: {
+    fromVersion: string;
+    toVersion: string;
+    description: string;
+    breaking?: boolean;
+  }[];
+  warnings: string[];
+  errors: string[];
+}
+
+/** Run a schema-migration command (shared by agentbom and mcp-posture). */
+function runMigrateCommand(
+  args: string[],
+  opts: {
+    label: string;
+    commandName: string;
+    latestVersion: string;
+    supportedVersions: string[];
+    versionKey: string;
+    migrate: (
+      data: Record<string, unknown>,
+      target?: string,
+    ) => MigrationOutcome;
+  },
+): number {
+  const { filePath, target, dryRun } = parseMigrateArgs(args);
+  if (!filePath) {
+    console.error(`Error: ${opts.commandName} requires a <path> argument`);
+    return 1;
   }
-  let data: unknown;
-  try {
-    data = JSON.parse(raw);
-  } catch {
-    console.error(`Error: "${resolved}" is not valid JSON`);
-    return { data: {}, error: 1 };
+
+  const { data, error } = readArtifactFile(filePath);
+  if (error) return error;
+
+  const latest = `v${opts.latestVersion} (latest)`;
+  console.log(
+    `${opts.label} migration: v${data[opts.versionKey] ?? "unknown"} → ${target ?? latest}`,
+  );
+  console.log(`  Supported versions: ${opts.supportedVersions.join(", ")}`);
+
+  const result = opts.migrate(data, target);
+
+  if (!result.success) {
+    console.error("  Migration failed:");
+    for (const e of result.errors) console.error(`    - ${e}`);
+    return 1;
   }
-  if (typeof data !== "object" || data === null || Array.isArray(data)) {
-    console.error(`Error: "${resolved}" does not contain a JSON object`);
-    return { data: {}, error: 1 };
+
+  if (result.stepsApplied.length === 0) {
+    console.log("  Already at target version — no migration needed.");
+  } else {
+    for (const step of result.stepsApplied) {
+      const breaking = step.breaking ? " (breaking)" : "";
+      console.log(
+        `  Step: ${step.fromVersion} → ${step.toVersion}: ${step.description}${breaking}`,
+      );
+    }
   }
-  return { data: data as Record<string, unknown>, error: 0 };
+
+  for (const w of result.warnings) {
+    console.warn(`  Warning: ${w}`);
+  }
+
+  if (dryRun) {
+    console.log("  (dry-run — no output written)");
+    return 0;
+  }
+
+  console.log(JSON.stringify(result.data, null, 2));
+  return 0;
 }
 
 function agentbomMigrateCommand(args: string[]): number {
-  const { filePath, target, dryRun } = parseMigrateArgs(args);
-  if (!filePath) {
-    console.error("Error: agentbom migrate requires a <path> argument");
-    return 1;
-  }
-
-  const { data, error } = readJsonFile(filePath);
-  if (error) return error;
-
-  const agentbomLatest = `v${getLatestAgentBOMVersion()} (latest)`;
-  console.log(
-    `AgentBOM migration: v${data.agentbom_version ?? "unknown"} → ${target ?? agentbomLatest}`,
-  );
-  console.log(
-    `  Supported versions: ${getSupportedAgentBOMVersions().join(", ")}`,
-  );
-
-  const result = migrateAgentBOM(data, target);
-
-  if (!result.success) {
-    console.error("  Migration failed:");
-    for (const e of result.errors) console.error(`    - ${e}`);
-    return 1;
-  }
-
-  if (result.stepsApplied.length === 0) {
-    console.log("  Already at target version — no migration needed.");
-  } else {
-    for (const step of result.stepsApplied) {
-      const breaking = step.breaking ? " (breaking)" : "";
-      console.log(
-        `  Step: ${step.fromVersion} → ${step.toVersion}: ${step.description}${breaking}`,
-      );
-    }
-  }
-
-  for (const w of result.warnings) {
-    console.warn(`  Warning: ${w}`);
-  }
-
-  if (dryRun) {
-    console.log("  (dry-run — no output written)");
-    return 0;
-  }
-
-  console.log(JSON.stringify(result.data, null, 2));
-  return 0;
+  return runMigrateCommand(args, {
+    label: "AgentBOM",
+    commandName: "agentbom migrate",
+    latestVersion: getLatestAgentBOMVersion(),
+    supportedVersions: getSupportedAgentBOMVersions(),
+    versionKey: "agentbom_version",
+    migrate: migrateAgentBOM,
+  });
 }
 
 function postureMigrateCommand(args: string[]): number {
-  const { filePath, target, dryRun } = parseMigrateArgs(args);
-  if (!filePath) {
-    console.error("Error: mcp-posture migrate requires a <path> argument");
-    return 1;
-  }
-
-  const { data, error } = readJsonFile(filePath);
-  if (error) return error;
-
-  const postureLatest = `v${getLatestPostureVersion()} (latest)`;
-  console.log(
-    `MCP Posture migration: v${data.posture_version ?? "unknown"} → ${target ?? postureLatest}`,
-  );
-  console.log(
-    `  Supported versions: ${getSupportedPostureVersions().join(", ")}`,
-  );
-
-  const result = migrateMCPPosture(data, target);
-
-  if (!result.success) {
-    console.error("  Migration failed:");
-    for (const e of result.errors) console.error(`    - ${e}`);
-    return 1;
-  }
-
-  if (result.stepsApplied.length === 0) {
-    console.log("  Already at target version — no migration needed.");
-  } else {
-    for (const step of result.stepsApplied) {
-      const breaking = step.breaking ? " (breaking)" : "";
-      console.log(
-        `  Step: ${step.fromVersion} → ${step.toVersion}: ${step.description}${breaking}`,
-      );
-    }
-  }
-
-  for (const w of result.warnings) {
-    console.warn(`  Warning: ${w}`);
-  }
-
-  if (dryRun) {
-    console.log("  (dry-run — no output written)");
-    return 0;
-  }
-
-  console.log(JSON.stringify(result.data, null, 2));
-  return 0;
+  return runMigrateCommand(args, {
+    label: "MCP Posture",
+    commandName: "mcp-posture migrate",
+    latestVersion: getLatestPostureVersion(),
+    supportedVersions: getSupportedPostureVersions(),
+    versionKey: "posture_version",
+    migrate: migrateMCPPosture,
+  });
 }
 
 // --- Policy enforcement engine (mirrors cmd/policy-engine/main.go) ---
@@ -604,10 +575,11 @@ function enforcePolicyCommand(args: string[]): number {
     return 1;
   }
 
-  const { data: policyData, error: policyErr } = readJsonFile(policyPath);
+  const { data: policyData, error: policyErr } = readArtifactFile(policyPath);
   if (policyErr) return policyErr;
 
-  const { data: artifactData, error: artifactErr } = readJsonFile(artifactPath);
+  const { data: artifactData, error: artifactErr } =
+    readArtifactFile(artifactPath);
   if (artifactErr) return artifactErr;
 
   const policy = policyData as unknown as PolicyDocument;
@@ -717,6 +689,13 @@ export function runCommand(args: string[]): number | Promise<number> {
         return 1;
       }
       return inspectAgentBOMCommand(args[2]);
+    }
+    if (args[1] === "validate") {
+      if (args.length < 3) {
+        console.error("Error: agentbom validate requires a <path> argument");
+        return 1;
+      }
+      return validateAgentBOMCommand(args[2]);
     }
     if (args[1] === "diff") {
       if (args.length < 4) {
