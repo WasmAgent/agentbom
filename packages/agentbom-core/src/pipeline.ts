@@ -378,18 +378,19 @@ export class PartitionedArtifactQueue {
 /**
  * Enterprise-grade BOM processing pipeline.
  *
- * Pull model (async iteration) provides natural backpressure: the pipeline
- * only reads artifacts as fast as it can process them. Memory is bounded by
- * the largest single artifact since only one artifact is held at a time per
- * partition worker.
- *
- * Partitions are processed concurrently, each preserving FIFO order for
- * artifacts within that partition. Cross-partition ordering is not guaranteed.
+ * Producer/consumer model: intake streams the source into a partitioned queue
+ * while per-partition workers drain it concurrently, preserving FIFO order
+ * within each partition (cross-partition ordering is not guaranteed). When
+ * heap usage exceeds the soft `maxMemoryBytes` limit, intake pauses so workers
+ * can drain the backlog — memory scales with the producer/consumer imbalance
+ * rather than the total input size.
  */
 export class BOMProcessingPipeline {
   private config: PipelineConfig;
   private metrics: PipelineMetrics;
   private onResult?: ResultCallback;
+  /** Set once the source is fully consumed (or failed) — workers exit after draining. */
+  private intakeComplete = false;
 
   constructor(config: Partial<PipelineConfig> = {}, onResult?: ResultCallback) {
     this.config = { ...DEFAULT_PIPELINE_CONFIG, ...config };
@@ -400,47 +401,79 @@ export class BOMProcessingPipeline {
   /**
    * Process BOM artifacts from the given source.
    * Returns the final pipeline metrics.
+   *
+   * Intake is streaming: artifacts are enqueued as the source yields them and
+   * workers drain their partitions concurrently, so the buffered backlog stays
+   * small instead of holding the whole input in memory. If the source throws,
+   * workers drain what was enqueued and the error is rethrown afterwards.
    */
   async process(source: BOMArtifactSource): Promise<PipelineMetrics> {
     const startTime = performance.now();
     this.metrics = emptyMetrics();
+    this.intakeComplete = false;
 
-    // Stage 1: partition artifacts
+    // Stage 1 (producer): stream the source into the partitioned queue,
+    // pausing intake when the soft memory limit is exceeded.
     const queue = new PartitionedArtifactQueue(this.config.partitionCount);
-    for await (const artifact of source) {
-      queue.enqueue(artifact);
-    }
+    let intakeError: unknown = null;
+    const producer = (async () => {
+      try {
+        for await (const artifact of source) {
+          await this.applyIntakeBackpressure();
+          queue.enqueue(artifact);
+        }
+      } catch (err) {
+        intakeError = err;
+      } finally {
+        // Workers must drain and exit even when the source failed midway.
+        this.intakeComplete = true;
+      }
+    })();
 
-    // Stage 2: process partitions concurrently
+    // Stage 2 (consumers): partitions are processed concurrently.
     const workers: Promise<void>[] = [];
     for (let p = 0; p < this.config.partitionCount; p++) {
       workers.push(this.processPartition(p, queue));
     }
-    await Promise.all(workers);
+    await Promise.all([producer, ...workers]);
 
     this.metrics.durationMs = performance.now() - startTime;
+    if (intakeError) throw intakeError;
     return this.snapshotMetrics();
   }
 
-  /** Process artifacts from one partition with backpressure awareness. */
+  /**
+   * Track peak heap and pause intake briefly when the soft memory limit is
+   * exceeded, giving workers time to drain the queue. Best-effort: intake
+   * always resumes even if the heap stays above the limit.
+   */
+  private async applyIntakeBackpressure(): Promise<void> {
+    if (this.config.maxMemoryBytes <= 0) return;
+    const mem = process.memoryUsage().heapUsed;
+    if (mem > this.metrics.peakMemoryBytes) {
+      this.metrics.peakMemoryBytes = mem;
+    }
+    if (mem > this.config.maxMemoryBytes) {
+      await this.backpressureWait();
+    }
+  }
+
+  /**
+   * Drain one partition until intake is complete and the partition is empty.
+   * FIFO order is preserved within the partition.
+   */
   private async processPartition(
     partition: number,
     queue: PartitionedArtifactQueue,
   ): Promise<void> {
-    while (queue.hasMore(partition)) {
-      // Backpressure gate: pause if memory exceeds the soft limit
-      if (this.config.maxMemoryBytes > 0) {
-        const mem = process.memoryUsage().heapUsed;
-        if (mem > this.metrics.peakMemoryBytes) {
-          this.metrics.peakMemoryBytes = mem;
-        }
-        if (mem > this.config.maxMemoryBytes) {
-          await this.backpressureWait();
-        }
-      }
-
+    for (;;) {
       const artifact = queue.dequeue(partition);
-      if (!artifact) break;
+      if (!artifact) {
+        if (this.intakeComplete) break;
+        // Intake still running — yield and re-poll.
+        await sleep(1);
+        continue;
+      }
 
       const result = this.processArtifact(artifact, partition);
 
@@ -526,6 +559,10 @@ export async function runPipeline(
 }
 
 // ─── Internal helpers ────────────────────────────────────────────
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 function emptyMetrics(): PipelineMetrics {
   return {
