@@ -222,10 +222,19 @@ function generateRiskAssessment(toolLayer: ToolDefinition[]): Array<{
   }> = [];
 
   for (const tool of toolLayer) {
+    // risk_id must be unique per tool — downstream diffing keys risks by id
+    let seq = 0;
+    const pushRisk = (risk: Omit<(typeof risks)[number], "risk_id">): void => {
+      seq += 1;
+      risks.push({
+        risk_id: `risk-${tool.tool_id}-${String(seq).padStart(3, "0")}`,
+        ...risk,
+      });
+    };
+
     // Check for high-risk tools
     if (tool.tool_id === "bash-exec" || tool.tool_id.includes("exec")) {
-      risks.push({
-        risk_id: `risk-${tool.tool_id}-001`,
+      pushRisk({
         severity: "medium",
         category: "command_execution",
         description: `${tool.tool_name} tool allows arbitrary process execution`,
@@ -238,8 +247,7 @@ function generateRiskAssessment(toolLayer: ToolDefinition[]): Array<{
       tool.source === "mcp" &&
       tool.permissions.some((p) => p.includes("network"))
     ) {
-      risks.push({
-        risk_id: `risk-${tool.tool_id}-001`,
+      pushRisk({
         severity: "high",
         category: "ssrf",
         description: `${tool.tool_name} makes outbound network requests`,
@@ -249,8 +257,7 @@ function generateRiskAssessment(toolLayer: ToolDefinition[]): Array<{
 
     // Check for file write operations
     if (tool.permissions.includes("fs:write")) {
-      risks.push({
-        risk_id: `risk-${tool.tool_id}-002`,
+      pushRisk({
         severity: "low",
         category: "data_modification",
         description: `${tool.tool_name} can modify files in the workspace`,
@@ -356,7 +363,14 @@ export function generateAgentBOMCommand(args: string[]): number {
   // Output the AgentBOM JSON
   const output = `${JSON.stringify(agentbom, null, 2)}\n`;
   if (parsed.outputPath) {
-    writeFileSync(resolve(parsed.outputPath), output, "utf-8");
+    try {
+      writeFileSync(resolve(parsed.outputPath), output, "utf-8");
+    } catch (err) {
+      console.error(
+        `Error: cannot write AgentBOM to "${parsed.outputPath}": ${err instanceof Error ? err.message : String(err)}`,
+      );
+      return 1;
+    }
   } else {
     console.log(output.trimEnd());
   }

@@ -266,6 +266,15 @@ function validateArtifactNode(data: unknown): {
   };
 }
 
+/** Cached per-CAS validation outcome, including integrity status. */
+interface CachedValidation {
+  valid: boolean;
+  nodeType: ChainNodeResult["nodeType"];
+  errors: string[];
+  artifactType: ArtifactType;
+  integrityVerified: boolean;
+}
+
 /**
  * Verify a single artifact node and recursively verify its references.
  *
@@ -287,15 +296,7 @@ function verifyNode(
   currentDepth: number,
   remainingDepth: number,
   visited: Set<string>,
-  cache: Map<
-    string,
-    {
-      valid: boolean;
-      nodeType: ChainNodeResult["nodeType"];
-      errors: string[];
-      artifactType: ArtifactType;
-    }
-  >,
+  cache: Map<string, CachedValidation>,
   allNodes: ChainNodeResult[],
   stats: { cacheHits: number; cacheMisses: number },
 ): ChainNodeResult {
@@ -336,7 +337,7 @@ function verifyNode(
     node.nodeType = cached.nodeType;
     node.valid = cached.valid;
     node.artifactType = cached.artifactType;
-    node.integrityVerified = true;
+    node.integrityVerified = cached.integrityVerified;
     stats.cacheHits++;
     allNodes.push(node);
     return node;
@@ -352,6 +353,7 @@ function verifyNode(
       nodeType: "unknown",
       errors: node.errors,
       artifactType: "unknown",
+      integrityVerified: false,
     });
     allNodes.push(node);
     return node;
@@ -380,13 +382,19 @@ function verifyNode(
     node.errors.length === 0;
 
   // Cache the result
-  cache.set(casId, validation);
+  cache.set(casId, {
+    ...validation,
+    integrityVerified: node.integrityVerified ?? false,
+  });
 
   // Recurse into references (if depth allows)
   if (remainingDepth > 0) {
-    const refs = validation.valid
-      ? extractArtifactReferences(pullResult.artifact)
-      : extractPassportReferences(pullResult.artifact);
+    // Passports reference artifacts via agentbom_ref/posture_ref/dependencies;
+    // other artifacts via distribution.supersedes/dependencies.
+    const refs =
+      validation.nodeType === "passport"
+        ? extractPassportReferences(pullResult.artifact)
+        : extractArtifactReferences(pullResult.artifact);
 
     for (const ref of refs) {
       const child = verifyNode(
@@ -460,15 +468,7 @@ export function verifyChain(
   let maxDepthReached = 0;
 
   if (config.maxDepth > 0) {
-    const cache = new Map<
-      string,
-      {
-        valid: boolean;
-        nodeType: ChainNodeResult["nodeType"];
-        errors: string[];
-        artifactType: ArtifactType;
-      }
-    >();
+    const cache = new Map<string, CachedValidation>();
     const visited = new Set<string>();
     const stats = { cacheHits: 0, cacheMisses: 0 };
 

@@ -32,12 +32,17 @@ export function readKeySeed(keyPath: string): Uint8Array {
     // PKCS#8 Ed25519 DER: 30 2e 02 01 00 30 05 06 03 2b 65 70 04 22 04 20 <32-byte seed>
     const b64 = raw.replace(/-----[^-]+-----/g, "").replace(/\s+/g, "");
     const der = Buffer.from(b64, "base64");
-    // Seed starts at offset 16 in standard PKCS#8 Ed25519 DER
-    if (der.length >= 48) {
-      return new Uint8Array(der.slice(16, 48));
+    const pkcs8Ed25519Prefix = Buffer.from(
+      "302e020100300506032b657004220420",
+      "hex",
+    );
+    // Validate the DER prefix so a non-Ed25519 PKCS#8 key fails loudly instead
+    // of silently signing with arbitrary bytes.
+    if (der.length >= 48 && der.subarray(0, 16).equals(pkcs8Ed25519Prefix)) {
+      return new Uint8Array(der.subarray(16, 48));
     }
     throw new Error(
-      `Cannot extract seed from PEM in "${keyPath}" — unexpected DER length ${der.length}`,
+      `Cannot extract seed from PEM in "${keyPath}" — expected a PKCS#8 Ed25519 private key (-----BEGIN PRIVATE KEY-----)`,
     );
   }
 

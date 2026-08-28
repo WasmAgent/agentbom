@@ -9,7 +9,7 @@
  *
  * Uses node:crypto for all cryptographic operations (no external deps).
  */
-import { createHash, createVerify, X509Certificate } from "node:crypto";
+import { createHash, createVerify, verify, X509Certificate } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { validateTrustPassport } from "@openagentaudit/passport";
@@ -148,9 +148,9 @@ function verifyArtifactSignature(
   try {
     const keyType = cert.publicKey.asymmetricKeyType;
     if (keyType === "ed25519") {
-      const v = createVerify("Ed25519");
-      v.update(artifact);
-      return v.verify(cert.publicKey, signature);
+      // Ed25519 is a one-shot algorithm: createVerify/createSign reject it as a
+      // digest name ("Invalid digest"), so use the one-pass crypto.verify form.
+      return verify(null, artifact, cert.publicKey, signature);
     }
     // RSA / ECDSA — try SHA-256, then SHA-384, then SHA-512
     for (const hash of ["sha256", "sha384", "sha512"] as const) {
@@ -485,7 +485,11 @@ export function verifySigstoreCommand(args: string[]): number {
       JSON.stringify(
         {
           valid: result.valid,
-          signature: result.signatureValid ? "valid" : "invalid",
+          signature: result.signatureValid
+            ? "valid"
+            : artifactPath
+              ? "invalid"
+              : "not_checked",
           certificate: result.certificateValid ? "valid" : "invalid",
           tlog: result.tlogVerified ? "verified" : "not_verified",
           artifact: result.artifactValid ? "valid" : "not_checked",
