@@ -217,8 +217,22 @@ export function extractDependencyIds(data: Record<string, unknown>): string[] {
 }
 
 /**
+ * Shared resolution state for dependency traversal.
+ *
+ * `memo` deduplicates diamond dependencies (the same CAS id reached via
+ * multiple paths resolves once and its result is reused). `inProgress` holds
+ * CAS ids on the current DFS path, so genuine cycles (A → B → A) are reported
+ * instead of looping.
+ */
+interface DependencyResolutionState {
+  memo: Map<string, ResolvedDependency>;
+  inProgress: Set<string>;
+}
+
+/**
  * Resolve a single declared dependency, optionally recursing into its own
- * dependencies. Cycle-safe via the `visited` set of already-resolved CAS ids.
+ * dependencies. Cycle-safe via the in-progress set. Diamond dependencies are
+ * deduplicated via the memo, not misreported as cycles.
  *
  * Pure with respect to the filesystem: reads only. Never throws — unresolved or
  * corrupt dependencies are reported via the `error`/`resolved` fields.
@@ -226,7 +240,7 @@ export function extractDependencyIds(data: Record<string, unknown>): string[] {
 function resolveSingleDependency(
   depId: string,
   registryDir: string,
-  visited: Set<string>,
+  state: DependencyResolutionState,
   recurse: boolean,
 ): ResolvedDependency {
   const base: ResolvedDependency = { artifactId: depId, resolved: false };
@@ -240,18 +254,23 @@ function resolveSingleDependency(
   }
 
   const casId = resolved.casId;
-  if (visited.has(casId)) {
+  if (state.inProgress.has(casId)) {
     return {
       ...base,
       resolved: true,
       casId,
-      error: "cycle — already resolved",
+      error: "cycle — already being resolved",
     };
   }
-  visited.add(casId);
+  const memoized = state.memo.get(casId);
+  if (memoized) {
+    return memoized;
+  }
+  state.inProgress.add(casId);
 
   const objectPath = objectPathForCasId(casId, registryDir);
   if (!existsSync(objectPath)) {
+    state.inProgress.delete(casId);
     return {
       ...base,
       resolved: false,
@@ -264,6 +283,7 @@ function resolveSingleDependency(
   try {
     raw = readFileSync(objectPath, "utf-8");
   } catch {
+    state.inProgress.delete(casId);
     return {
       ...base,
       resolved: false,
@@ -277,6 +297,7 @@ function resolveSingleDependency(
   try {
     const data = JSON.parse(raw);
     if (typeof data !== "object" || data === null || Array.isArray(data)) {
+      state.inProgress.delete(casId);
       return {
         ...base,
         resolved: true,
@@ -287,6 +308,7 @@ function resolveSingleDependency(
     }
     parsed = data as Record<string, unknown>;
   } catch {
+    state.inProgress.delete(casId);
     return {
       ...base,
       resolved: true,
@@ -309,10 +331,12 @@ function resolveSingleDependency(
   if (recurse) {
     const childIds = extractDependencyIds(parsed);
     result.dependencies = childIds.map((id) =>
-      resolveSingleDependency(id, registryDir, visited, recurse),
+      resolveSingleDependency(id, registryDir, state, recurse),
     );
   }
 
+  state.inProgress.delete(casId);
+  state.memo.set(casId, result);
   return result;
 }
 
@@ -320,7 +344,8 @@ function resolveSingleDependency(
  * Resolve all declared dependencies of an artifact.
  *
  * When `recurse` is true, each dependency's own dependencies are resolved
- * transitively (cycle-safe). Returns one {@link ResolvedDependency} per
+ * transitively (cycle-safe). Diamond (shared) dependencies resolve once and
+ * reuse the first result. Returns one {@link ResolvedDependency} per
  * declared id, in declaration order.
  */
 export function resolveDependencies(
@@ -328,9 +353,12 @@ export function resolveDependencies(
   registryDir: string,
   recurse: boolean,
 ): ResolvedDependency[] {
-  const visited = new Set<string>();
+  const state: DependencyResolutionState = {
+    memo: new Map(),
+    inProgress: new Set(),
+  };
   return dependencyIds.map((id) =>
-    resolveSingleDependency(id, registryDir, visited, recurse),
+    resolveSingleDependency(id, registryDir, state, recurse),
   );
 }
 

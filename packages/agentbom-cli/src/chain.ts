@@ -70,7 +70,7 @@ export interface ChainReport {
   steps: ChainStepResult[];
 }
 
-/** Ordered step identifiers — the 6 chain nodes joined by 5 verifiable links. */
+/** Ordered step identifiers for the chain (bscode workload → … → Trust Passport). */
 export const CHAIN_STEPS = [
   "manifest",
   "agentbom",
@@ -462,7 +462,14 @@ export function chainCommand(args: string[]): number {
   }
 
   const resolvedOut = resolve(outPath);
-  writeFileSync(resolvedOut, `${JSON.stringify(report, null, 2)}\n`, "utf-8");
+  try {
+    writeFileSync(resolvedOut, `${JSON.stringify(report, null, 2)}\n`, "utf-8");
+  } catch (err) {
+    console.error(
+      `Error: cannot write chain report to "${resolvedOut}": ${err instanceof Error ? err.message : String(err)}`,
+    );
+    return 1;
+  }
 
   if (report.overall.status !== "valid") {
     const failed = report.steps

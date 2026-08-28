@@ -291,7 +291,7 @@ describe("parsePublishArgs", () => {
     const artifactPath = writeJson("bom.json", VALID_AGENTBOM);
     const result = parsePublishArgs([artifactPath, "--registry"]);
     expect(typeof result).toBe("string");
-    expect(result).toContain("unknown argument");
+    expect(result).toContain("--registry requires");
   });
 
   it("resolves artifact path to absolute", () => {

@@ -300,10 +300,12 @@ export function parsePublishArgs(args: string[]): PublishConfig | string {
     const arg = args[i];
     const next = args[i + 1];
 
-    if (arg === "--registry" && next) {
+    if (arg === "--registry") {
+      if (!next) return `Error: --registry requires a directory value`;
       registryDir = next;
       i++;
-    } else if (arg === "--tag" && next) {
+    } else if (arg === "--tag") {
+      if (!next) return `Error: --tag requires a tag value`;
       tag = next;
       i++;
     } else {

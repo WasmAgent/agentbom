@@ -1,8 +1,11 @@
 #!/usr/bin/env bun
 import { readFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
-import { validateAgentBOM } from "@wasmagent/agentbom-core";
+import { resolve } from "node:path";
+import {
+  type ComplianceProfile,
+  validateAgentBOM,
+} from "@wasmagent/agentbom-core";
+import { loadProfile } from "./compliance-check.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -32,44 +35,6 @@ type EvidenceLevel = "summary" | "detailed";
 
 /** Output format */
 type ReportFormat = "text" | "json";
-
-interface ComplianceProfile {
-  profile_version: string;
-  profile_id: string;
-  framework: {
-    name: string;
-    version: string;
-    description?: string;
-  };
-  rules: {
-    identity?: {
-      required_fields?: string[];
-      allowed_contexts?: string[];
-      requires_version?: boolean;
-    };
-    tool_layer?: {
-      max_severity?: string;
-      requires_tool_inventory?: boolean;
-      blocked_permissions?: string[];
-      blocked_sources?: string[];
-    };
-    risk_layer?: {
-      requires_risk_assessment?: boolean;
-      max_unmitigated_critical?: number;
-      max_unmitigated_high?: number;
-      max_unmitigated_medium?: number;
-      requires_mitigation_for?: string[];
-    };
-    attestation?: {
-      requires_signature?: boolean;
-      requires_timestamp?: boolean;
-    };
-  };
-  metadata?: {
-    author?: string;
-    documentation_url?: string;
-  };
-}
 
 /** A single control objective in the report */
 interface ControlObjective {
@@ -882,24 +847,6 @@ function assessAIActOversight(
 }
 
 // ---------------------------------------------------------------------------
-// Profile loading
-// ---------------------------------------------------------------------------
-
-function loadProfile(profileId: string): ComplianceProfile | null {
-  const profilesDir = resolve(
-    dirname(fileURLToPath(import.meta.url)),
-    "../profiles",
-  );
-  const profilePath = resolve(profilesDir, `${profileId}.json`);
-  try {
-    const raw = readFileSync(profilePath, "utf-8");
-    return JSON.parse(raw) as ComplianceProfile;
-  } catch {
-    return null;
-  }
-}
-
-// ---------------------------------------------------------------------------
 // Report generation
 // ---------------------------------------------------------------------------
 
@@ -1196,18 +1143,14 @@ export function reportCommand(args: string[]): number {
     return 1;
   }
 
-  // Load compliance profile
-  const profileId = FRAMEWORK_TO_PROFILE[framework];
-
   // Load compliance profile from file
-  let profile: ComplianceProfile;
-  const loaded = loadProfile(profileId);
-  if (!loaded) {
+  const profileId = FRAMEWORK_TO_PROFILE[framework];
+  const profile = loadProfile(profileId);
+  if (!profile) {
     console.error(`Error: cannot load compliance profile "${profileId}"`);
     console.error(`Expected file: profiles/${profileId}.json`);
     return 1;
   }
-  profile = loaded;
 
   // Build report
   const report = buildReport(

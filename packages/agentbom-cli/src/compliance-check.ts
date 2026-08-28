@@ -12,7 +12,7 @@ import {
 } from "@wasmagent/agentbom-core";
 import { readArtifactFile } from "./trust-publish.js";
 
-function loadProfile(profileId: string): ComplianceProfile | null {
+export function loadProfile(profileId: string): ComplianceProfile | null {
   const profilesDir = resolve(
     dirname(fileURLToPath(import.meta.url)),
     "../profiles",

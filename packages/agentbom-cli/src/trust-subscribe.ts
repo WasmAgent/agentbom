@@ -472,13 +472,22 @@ export async function subscribeCommand(args: string[]): Promise<number> {
         });
       }
 
-      // Update baseline to latest artifact to avoid re-alerting on same drift
-      if (result.scannedFiles.length > 0) {
-        const latestFile = result.scannedFiles[result.scannedFiles.length - 1];
-        const latestData = readJsonRecord(latestFile);
-        if (latestData) {
-          config.baselinePath = latestFile;
+      // Update baseline to the newest scanned artifact (by generated_at) to
+      // avoid re-alerting on the same drift
+      let latestFile: string | undefined;
+      let latestTs = Number.NEGATIVE_INFINITY;
+      for (const file of result.scannedFiles) {
+        if (resolve(file) === resolve(config.baselinePath)) continue;
+        const data = readJsonRecord(file);
+        if (!data) continue;
+        const ts = Date.parse(extractTimestamp(data));
+        if (!Number.isNaN(ts) && ts > latestTs) {
+          latestTs = ts;
+          latestFile = file;
         }
+      }
+      if (latestFile) {
+        config.baselinePath = latestFile;
       }
     } else {
       console.log(
