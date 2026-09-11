@@ -18,5 +18,10 @@
     "@changesets/cli": "^2.31.1",
     "turbo": "^2.10.7",
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@wasmagent/aep": "^2.5.0",
+    "@wasmagent/mcp-posture": "^0.2.4",
+    "@wasmagent/protocol": "^0.1.9"
   }
 }
