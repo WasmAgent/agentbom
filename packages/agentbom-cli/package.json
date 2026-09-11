@@ -48,7 +48,7 @@
   "dependencies": {
     "@openagentaudit/passport": "^0.5.2",
     "@wasmagent/agentbom-core": "workspace:*",
-    "@wasmagent/aep": "^1.21.1",
+    "@wasmagent/aep": "^2.4.2",
     "prom-client": "^15.1.0",
     "@wasmagent/mcp-posture": "^0.2.0"
   },

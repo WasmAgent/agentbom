@@ -32,7 +32,7 @@
       },
       "dependencies": {
         "@openagentaudit/passport": "^0.5.2",
-        "@wasmagent/aep": "^1.21.1",
+        "@wasmagent/aep": "^2.4.2",
         "@wasmagent/agentbom-core": "workspace:*",
         "@wasmagent/mcp-posture": "^0.2.0",
         "prom-client": "^15.1.0",
@@ -47,7 +47,7 @@
       "name": "@wasmagent/agentbom-core",
       "version": "0.4.0",
       "dependencies": {
-        "@wasmagent/protocol": "^0.1.7",
+        "@wasmagent/protocol": "^0.1.9",
         "ajv": "^8.20.0",
         "ajv-formats": "^3.0.1",
       },
@@ -177,7 +177,7 @@
 
     "@types/node": ["@types/node@26.1.2", "", { "dependencies": { "undici-types": "~8.3.0" } }, "sha512-Vu4a5UFA9rIIFJ7rB/Vaafh9lrCQszopTCx6KjFboXTGQbPNasehVR5TEiithSDGyd1DEiUByggTZsg8jukeIg=="],
 
-    "@wasmagent/aep": ["@wasmagent/aep@1.21.1", "", { "dependencies": { "@noble/ed25519": "^3.1.0", "zod": "^3.23.0" } }, "sha512-Dy27Tncrzn+MoEsgJMO1LQaKRMBcf8mQ0V0M1oX32WRj7C1mNNGB2g6c/iw6am8HiFRkHfxsN+2JfE8JpYYiJA=="],
+    "@wasmagent/aep": ["@wasmagent/aep@2.4.2", "", { "dependencies": { "@noble/ed25519": "^3.1.0", "zod": "^3.23.0" } }, "sha512-6oTaFJno9q0HJmW6UBbOW1uLrYHyHtGzBQLbXRTkQBRruQuYERiXs9p8uSjDFGrF0QSdKyuFoo8nzILfgquTgw=="],
 
     "@wasmagent/agentbom-autogen": ["@wasmagent/agentbom-autogen@workspace:packages/agentbom-autogen"],
 
@@ -191,7 +191,7 @@
 
     "@wasmagent/mcp-posture": ["@wasmagent/mcp-posture@0.2.0", "", { "dependencies": { "@wasmagent/protocol": "0.1.7" } }, "sha512-6qfmE/in0zhNUUOmUZJW59rpCTl0DcREcxVd0xoUFK6omoLxsJo3U9ox148P8hLw07xqzjOKMTlrRN7UthFukw=="],
 
-    "@wasmagent/protocol": ["@wasmagent/protocol@0.1.7", "", { "bin": { "wasmagent-protocol": "bin/cli.js" } }, "sha512-XOVNiky/7yGswggSr9h3IorHZal0eytCrirmV8tEJxs9pZbasKmCHdUwaZp5veGVxf7qLapsfmrq3x6nRxqA2Q=="],
+    "@wasmagent/protocol": ["@wasmagent/protocol@0.1.9", "", { "bin": { "wasmagent-protocol": "bin/cli.js" } }, "sha512-yYrogBQaqlFZXieHoOjufU6vLogjSQQy+rf+Xe5mxW5wXpNkXBBvTt0uUp9ap00hR1mmGI6u9NKtLTo4EMTwnw=="],
 
     "ajv": ["ajv@8.20.0", "", { "dependencies": { "fast-deep-equal": "^3.1.3", "fast-uri": "^3.0.1", "json-schema-traverse": "^1.0.0", "require-from-string": "^2.0.2" } }, "sha512-Thbli+OlOj+iMPYFBVBfJ3OmCAnaSyNn4M1vz9T6Gka5Jt9ba/HIR56joy65tY6kx/FCF5VXNB819Y7/GUrBGA=="],
 
@@ -372,6 +372,8 @@
     "@manypkg/get-packages/fs-extra": ["fs-extra@8.1.0", "", { "dependencies": { "graceful-fs": "^4.2.0", "jsonfile": "^4.0.0", "universalify": "^0.1.0" } }, "sha512-yhlQgA6mnOJUKOsRUFsgJdQCvkKhcz8tlZG5HBQfReYZy46OwLcY+Zia0mtdHsOo9y/hP+CxMN0TU9QxoOtG4g=="],
 
     "@wasmagent/aep/@noble/ed25519": ["@noble/ed25519@3.1.0", "", {}, "sha512-pfcObRY3CtvwfaG9Mt5XqZdKmAQppl37tHUeuBhDUbiwJBCVY4/A4lbMvb1xKhMDx96AqAqZpMWuBX1HulhX4g=="],
+
+    "@wasmagent/mcp-posture/@wasmagent/protocol": ["@wasmagent/protocol@0.1.7", "", { "bin": { "wasmagent-protocol": "bin/cli.js" } }, "sha512-XOVNiky/7yGswggSr9h3IorHZal0eytCrirmV8tEJxs9pZbasKmCHdUwaZp5veGVxf7qLapsfmrq3x6nRxqA2Q=="],
 
     "read-yaml-file/js-yaml": ["js-yaml@3.15.0", "", { "dependencies": { "argparse": "^1.0.7", "esprima": "^4.0.0" }, "bin": { "js-yaml": "bin/js-yaml.js" } }, "sha512-ttBQIIQPDeLjpPOohtUdXuXUVoA2uIB6fEH9HyJ7234s5mBJ5wTx20njxplLZQgLaOfpmPQA7X2t5AX6tIPbog=="],
 

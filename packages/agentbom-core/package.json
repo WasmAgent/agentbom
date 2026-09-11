@@ -24,7 +24,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@wasmagent/protocol": "^0.1.7",
+    "@wasmagent/protocol": "^0.1.9",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1"
   },
