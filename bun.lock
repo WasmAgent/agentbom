@@ -36,7 +36,7 @@
         "agent-trust": "./dist/index.js",
       },
       "dependencies": {
-        "@openagentaudit/passport": "^0.5.2",
+        "@openagentaudit/passport": "^0.6.2",
         "@wasmagent/aep": "^2.9.0",
         "@wasmagent/agentbom-core": "workspace:*",
         "@wasmagent/mcp-posture": "^0.2.4",
@@ -150,7 +150,7 @@
 
     "@noble/ed25519": ["@noble/ed25519@3.1.0", "", {}, "sha512-pfcObRY3CtvwfaG9Mt5XqZdKmAQppl37tHUeuBhDUbiwJBCVY4/A4lbMvb1xKhMDx96AqAqZpMWuBX1HulhX4g=="],
 
-    "@noble/hashes": ["@noble/hashes@1.8.0", "", {}, "sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A=="],
+    "@noble/hashes": ["@noble/hashes@2.4.0", "", {}, "sha512-X5XaVWZIBCT7HHZGm5I7ZQXDwLG+bGXuSrMQAW+7Zvl87h1kmc1ZB1VSRJcpUfoUrGQp4Fkoxm5kZ+Ms+aW+eA=="],
 
     "@nodelib/fs.scandir": ["@nodelib/fs.scandir@2.1.5", "", { "dependencies": { "@nodelib/fs.stat": "2.0.5", "run-parallel": "^1.1.9" } }, "sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g=="],
 
@@ -158,11 +158,11 @@
 
     "@nodelib/fs.walk": ["@nodelib/fs.walk@1.2.8", "", { "dependencies": { "@nodelib/fs.scandir": "2.1.5", "fastq": "^1.6.0" } }, "sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg=="],
 
-    "@openagentaudit/core": ["@openagentaudit/core@0.5.2", "", { "dependencies": { "@openagentaudit/schema": "0.5.1" } }, "sha512-dkPFIPuegWWJXTD5wjFMDYBjIO9WrKvLXXBl/ZPUmvn1h8TAFCM9+pwtS7qx/WJaeWTqiGeQtcoXAaPR6vFTAg=="],
+    "@openagentaudit/core": ["@openagentaudit/core@0.8.0", "", { "dependencies": { "@openagentaudit/schema": "0.7.0" } }, "sha512-jQfBITR1K5vEoQofq/6ucZplFZ64eDd1ixQZ6tr/IzDNxMvtY73fszADuQMp+Zp2dL5s8UErDS/7IM7fqjsowQ=="],
 
-    "@openagentaudit/passport": ["@openagentaudit/passport@0.5.2", "", { "dependencies": { "@noble/ed25519": "^2.2.3", "@noble/hashes": "^1.7.2", "@openagentaudit/core": "0.5.2", "@openagentaudit/schema": "0.5.1" } }, "sha512-bvZRBS7g77uq2k9ZHYfeWWFVA8tx+T091xVajKOVNh7YFJSLoy8skJRInd85M7Vj/9jm/1Sh9DnRM4Kj3/QxAw=="],
+    "@openagentaudit/passport": ["@openagentaudit/passport@0.6.2", "", { "dependencies": { "@noble/ed25519": "^3.1.0", "@noble/hashes": "^2.2.0", "@openagentaudit/core": "0.8.0", "@openagentaudit/schema": "0.7.0" } }, "sha512-Tu+mFJdslOyPKGQ7uYQTq4UrrynI6aViKCEoZ/t246/HEMYbvT0GpFFNPVuZCwE/GaUGupo488/IEWRe1ss4eA=="],
 
-    "@openagentaudit/schema": ["@openagentaudit/schema@0.5.1", "", { "dependencies": { "zod": "^3.23.0" } }, "sha512-yMmIE9IjZnmbaZ6eTYRhHYtxo6HUZxPFXFC5BAKeZXi7KSgVCIOGIjEwp/mwkSa0ioXBJjDGeTrRlgSe31uMaA=="],
+    "@openagentaudit/schema": ["@openagentaudit/schema@0.7.0", "", { "dependencies": { "zod": "^4.4.3" } }, "sha512-QbkKw7wGOdRJyu5sD+/iNOIK783C/KiLsclScvdTC0rUtAbjcCo+gXl4T44WfyrwvGE5xaN1Lp5xbRBOyoHg2g=="],
 
     "@opentelemetry/api": ["@opentelemetry/api@1.9.1", "", {}, "sha512-gLyJlPHPZYdAk1JENA9LeHejZe1Ti77/pTeFm/nMXmQH/HFZlcS/O2XJB+L8fkbrNSqhdtlvjBVjxwUYanNH5Q=="],
 
@@ -376,7 +376,7 @@
 
     "@manypkg/get-packages/fs-extra": ["fs-extra@8.1.0", "", { "dependencies": { "graceful-fs": "^4.2.0", "jsonfile": "^4.0.0", "universalify": "^0.1.0" } }, "sha512-yhlQgA6mnOJUKOsRUFsgJdQCvkKhcz8tlZG5HBQfReYZy46OwLcY+Zia0mtdHsOo9y/hP+CxMN0TU9QxoOtG4g=="],
 
-    "@openagentaudit/passport/@noble/ed25519": ["@noble/ed25519@2.3.0", "", {}, "sha512-M7dvXL2B92/M7dw9+gzuydL8qn/jiqNHaoR3Q+cb1q1GHV7uwE17WCyFMG+Y+TZb5izcaXk5TdJRrDUxHXL78A=="],
+    "@openagentaudit/schema/zod": ["zod@4.6.5", "", {}, "sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q=="],
 
     "@wasmagent/mcp-posture/@wasmagent/protocol": ["@wasmagent/protocol@0.1.9", "", { "bin": { "wasmagent-protocol": "bin/cli.js" } }, "sha512-yYrogBQaqlFZXieHoOjufU6vLogjSQQy+rf+Xe5mxW5wXpNkXBBvTt0uUp9ap00hR1mmGI6u9NKtLTo4EMTwnw=="],
 
