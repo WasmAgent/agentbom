@@ -67,6 +67,64 @@ describe("canonical contract fixtures (AB-4)", () => {
     expect(Array.isArray(schema?.required)).toBe(true);
   });
 
+  it("validates a canonical MCP Posture document against the packaged schema", () => {
+    const validate = makeValidator("mcp-posture");
+    const doc = {
+      posture_version: "0.1",
+      identity: {
+        snapshot_id: "snap-001",
+        agent_id: "canonical-fixture-001",
+        captured_at: "2026-09-14T00:00:00Z",
+      },
+      servers: [],
+      attestation: { generator: "agentbom-core" },
+    };
+    expect(validate(doc)).toBe(true);
+  });
+
+  it("validates a canonical AEP v0.5 record against the packaged schema (AB-3)", () => {
+    const validate = makeValidator("aep-record");
+    const record = {
+      schema_version: "aep/v0.5",
+      run_id: "ab-canonical-aep-001",
+      created_at_ms: 1750000000000,
+      attribution_backing: "operator_asserted",
+      run_attribution_backing_floor: "operator_asserted",
+      run_attribution_backing_observed: ["operator_asserted"],
+      authorization_evidence_count: 1,
+    };
+    expect(validate(record)).toBe(true);
+  });
+
+  it("rejects an AEP record carrying an unknown schema_version", () => {
+    const validate = makeValidator("aep-record");
+    const record = {
+      schema_version: "aep/v9.9",
+      run_id: "ab-canonical-aep-002",
+      created_at_ms: 1750000000000,
+    };
+    expect(validate(record)).toBe(false);
+  });
+
+  it("validates a canonical Trust Passport document against the packaged schema (AB-3)", () => {
+    const validate = makeValidator("trust-passport");
+    const passport = {
+      passport_version: "0.1",
+      identity: {
+        passport_id: "pp-001",
+        agent_id: "canonical-fixture-001",
+        issuer: "trustavo",
+      },
+      validity: {
+        issued_at: "2026-09-14T00:00:00Z",
+        expires_at: "2027-09-14T00:00:00Z",
+      },
+      revocation: { revoked: false },
+      attestation: { issuer: "trustavo", signing_method: "ed25519" },
+    };
+    expect(validate(passport)).toBe(true);
+  });
+
   it("repo carries no hand-copied canonical schema files (drift guard)", async () => {
     const { readdirSync, statSync } = await import("node:fs");
     const { join } = await import("node:path");

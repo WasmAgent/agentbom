@@ -37,9 +37,9 @@
       },
       "dependencies": {
         "@openagentaudit/passport": "^0.5.2",
-        "@wasmagent/aep": "^2.4.2",
+        "@wasmagent/aep": "^2.9.0",
         "@wasmagent/agentbom-core": "workspace:*",
-        "@wasmagent/mcp-posture": "^0.2.0",
+        "@wasmagent/mcp-posture": "^0.2.4",
         "prom-client": "^15.1.0",
       },
       "devDependencies": {
@@ -52,7 +52,7 @@
       "name": "@wasmagent/agentbom-core",
       "version": "0.4.0",
       "dependencies": {
-        "@wasmagent/protocol": "^0.1.9",
+        "@wasmagent/protocol": "^0.1.10",
         "ajv": "^8.20.0",
         "ajv-formats": "^3.0.1",
       },
@@ -377,10 +377,6 @@
     "@manypkg/get-packages/fs-extra": ["fs-extra@8.1.0", "", { "dependencies": { "graceful-fs": "^4.2.0", "jsonfile": "^4.0.0", "universalify": "^0.1.0" } }, "sha512-yhlQgA6mnOJUKOsRUFsgJdQCvkKhcz8tlZG5HBQfReYZy46OwLcY+Zia0mtdHsOo9y/hP+CxMN0TU9QxoOtG4g=="],
 
     "@openagentaudit/passport/@noble/ed25519": ["@noble/ed25519@2.3.0", "", {}, "sha512-M7dvXL2B92/M7dw9+gzuydL8qn/jiqNHaoR3Q+cb1q1GHV7uwE17WCyFMG+Y+TZb5izcaXk5TdJRrDUxHXL78A=="],
-
-    "@wasmagent/agentbom-cli/@wasmagent/aep": ["@wasmagent/aep@2.5.0", "", { "dependencies": { "@noble/ed25519": "^3.1.0", "zod": "^3.23.0" } }, "sha512-jOVnbJJEANPxm14gHayMnazmqRWOiLSROFND6OdowBMo8POtw6xkJm0rI5bGpcaueNggtS5Yu/JJOoLqkPfSQg=="],
-
-    "@wasmagent/agentbom-core/@wasmagent/protocol": ["@wasmagent/protocol@0.1.9", "", { "bin": { "wasmagent-protocol": "bin/cli.js" } }, "sha512-yYrogBQaqlFZXieHoOjufU6vLogjSQQy+rf+Xe5mxW5wXpNkXBBvTt0uUp9ap00hR1mmGI6u9NKtLTo4EMTwnw=="],
 
     "@wasmagent/mcp-posture/@wasmagent/protocol": ["@wasmagent/protocol@0.1.9", "", { "bin": { "wasmagent-protocol": "bin/cli.js" } }, "sha512-yYrogBQaqlFZXieHoOjufU6vLogjSQQy+rf+Xe5mxW5wXpNkXBBvTt0uUp9ap00hR1mmGI6u9NKtLTo4EMTwnw=="],
 

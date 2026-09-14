@@ -48,9 +48,9 @@
   "dependencies": {
     "@openagentaudit/passport": "^0.5.2",
     "@wasmagent/agentbom-core": "workspace:*",
-    "@wasmagent/aep": "^2.4.2",
+    "@wasmagent/aep": "^2.9.0",
     "prom-client": "^15.1.0",
-    "@wasmagent/mcp-posture": "^0.2.0"
+    "@wasmagent/mcp-posture": "^0.2.4"
   },
   "scripts": {
     "build": "mkdir -p dist && bun build ./src/index.ts --target node --outfile dist/index.js",
