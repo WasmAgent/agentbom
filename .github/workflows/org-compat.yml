@@ -43,6 +43,8 @@ jobs:
           else
             echo "relevant=false" >> "$GITHUB_OUTPUT"
           fi
+          # N4-P1-01 verification: force relevance detection to fail.
+          exit 1
 
   org-compat:
     name: Org compat (agentbom, internal)
