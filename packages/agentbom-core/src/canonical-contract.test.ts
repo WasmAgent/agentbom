@@ -1,0 +1,90 @@
+import { describe, expect, it } from "bun:test";
+import { getSchema } from "@wasmagent/protocol";
+import Ajv2020 from "ajv/dist/2020.js";
+import addFormats from "ajv-formats";
+
+/**
+ * AB-4 — canonical fixture gate.
+ *
+ * Schemas are consumed from the exact published @wasmagent/protocol package
+ * (never hand-copied). These tests pin the canonical contract surface:
+ * a canonical AgentBOM document validates, a semantic-negative does not,
+ * and the repo carries no local schema copies that could drift.
+ */
+
+function makeValidator(schemaName: string) {
+  const ajv = new Ajv2020({ allErrors: true, strict: false });
+  addFormats(ajv);
+  const schema = getSchema(schemaName);
+  if (!schema)
+    throw new Error(
+      `canonical schema not found in @wasmagent/protocol: ${schemaName}`,
+    );
+  return ajv.compile(schema as Record<string, unknown>);
+}
+
+const CANONICAL_AGENTBOM = {
+  agentbom_version: "0.1",
+  identity: {
+    agent_id: "canonical-fixture-001",
+    agent_name: "Canonical Fixture Agent",
+    agent_version: "1.0.0",
+    generated_at: "2026-09-14T00:00:00Z",
+  },
+  attestation: {
+    generator: "agentbom-core",
+    generator_version: "0.0.0",
+  },
+};
+
+describe("canonical contract fixtures (AB-4)", () => {
+  it("validates a canonical AgentBOM document against the packaged schema", () => {
+    const validate = makeValidator("agentbom");
+    expect(validate(CANONICAL_AGENTBOM)).toBe(true);
+  });
+
+  it("rejects a semantic-negative (required identity removed)", () => {
+    const validate = makeValidator("agentbom");
+    const mutated = JSON.parse(JSON.stringify(CANONICAL_AGENTBOM)) as Record<
+      string,
+      unknown
+    >;
+    delete mutated.identity;
+    expect(validate(mutated)).toBe(false);
+  });
+
+  it("rejects an unknown agentbom_version", () => {
+    const validate = makeValidator("agentbom");
+    const mutated = { ...CANONICAL_AGENTBOM, agentbom_version: "9.9" };
+    expect(validate(mutated)).toBe(false);
+  });
+
+  it("canonical MCP Posture schema is available from the package", () => {
+    const schema = getSchema("mcp-posture") as
+      | { required?: string[] }
+      | undefined;
+    expect(schema).toBeDefined();
+    expect(Array.isArray(schema?.required)).toBe(true);
+  });
+
+  it("repo carries no hand-copied canonical schema files (drift guard)", async () => {
+    const { readdirSync, statSync } = await import("node:fs");
+    const { join } = await import("node:path");
+    const offenders: string[] = [];
+    const walk = (dir: string) => {
+      for (const entry of readdirSync(dir)) {
+        if (
+          entry === "node_modules" ||
+          entry === "dist" ||
+          entry.startsWith(".")
+        )
+          continue;
+        const p = join(dir, entry);
+        if (statSync(p).isDirectory()) walk(p);
+        else if (entry.endsWith(".schema.json")) offenders.push(p);
+      }
+    };
+    walk(join(import.meta.dir, "../../.."));
+    expect(offenders).toEqual([]);
+  });
+});
