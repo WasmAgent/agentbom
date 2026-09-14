@@ -94,3 +94,5 @@ The CLI (`agentbom validate`, `agentbom inspect`) now lives in this repo as
 ---
 
 *Migrated from [WasmAgent/agent-trust-infra](https://github.com/WasmAgent/agent-trust-infra) (now archived) — the library packages and the CLI have their permanent home here. Schema authority stays in [`wasmagent-protocol`](https://github.com/WasmAgent/wasmagent-protocol).*
+
+<!-- n4 verify irrelevant-path required-summary behavior -->
