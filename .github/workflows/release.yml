@@ -7,6 +7,15 @@ on:
       - "packages/**"
       - "package.json"
       - "bun.lock"
+  # N2-P1-09: expose a PR-safe release preflight. The `preconditions` job runs
+  # the full release check set on PRs; publishing stays push-only.
+  pull_request:
+    branches: [main]
+    paths:
+      - ".changeset/**"
+      - "packages/**"
+      - "package.json"
+      - "bun.lock"
 concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
@@ -19,7 +28,7 @@ jobs:
   # AB-2: full CI gate before any publish path runs. The changesets version
   # PR / publish below executes only when these preconditions are green.
   preconditions:
-    name: "AB-2: release preconditions"
+    name: "Release preconditions"
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -51,6 +60,9 @@ jobs:
 
   release:
     needs: preconditions
+    # Publishing is push-only. On pull requests only `preconditions` (the
+    # PR-safe release preflight) runs.
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: write
